@@ -1,11 +1,20 @@
-import contactForm from '../utils/contactForm.js'
-
+/**
+ * Class representing a Photographer Template.
+ */
 class PhotographerTemplate {
+  /**
+   * Constructor for the PhotographerTemplate class.
+   * @param {Object} photographer - Photographer data.
+   */
   constructor (photographer) {
     this._photographer = photographer
     // console.log(this._photographer)
   }
 
+  /**
+   * Create the DOM structure for the photographer card.
+   * @returns {HTMLElement} Photographer card element.
+   */
   createPhotographerCardDOM () {
     const $container = document.createElement('article')
 
@@ -13,7 +22,7 @@ class PhotographerTemplate {
     $link.href = '#'
     $link.classList.add('portfolio-link', 'card-thumbnail')
     $link.dataset.photographerId = this._photographer.id
-    $link.setAttribute('aria-label', '{this._photographer.name}')
+    $link.setAttribute('aria-label', `${this._photographer.name}`)
 
     const $thumbnailContainer = document.createElement('div')
     $thumbnailContainer.classList.add('thumbnail-container')
@@ -32,37 +41,41 @@ class PhotographerTemplate {
     const $cardContent = document.createElement('div')
     $cardContent.classList.add('card-content')
 
-    // Create and append the <p> elements for location, tagline, and price
+    // Create and append <p> elements for location, tagline, and price
     const $location = document.createElement('p')
     $location.classList.add('location')
     $location.textContent = this._photographer.location
-    $location.setAttribute('aria-label', 'Location: {this._photographer.location}')
+    $location.setAttribute('aria-label', `Location: ${this._photographer.location}`)
 
     const $tagline = document.createElement('p')
     $tagline.classList.add('tagline')
     $tagline.textContent = this._photographer.tagline
-    $tagline.setAttribute('aria-label', 'Tagline: {this._photographer.tagline}')
+    $tagline.setAttribute('aria-label', `Tagline: ${this._photographer.tagline}`)
 
     const $price = document.createElement('p')
     $price.classList.add('price')
     $price.textContent = this._photographer.price
-    $price.setAttribute('aria-label', 'Price: {this._photographer.price}')
+    $price.setAttribute('aria-label', `Price: ${this._photographer.price}`)
 
     // Append location, tagline, and price to the card content
     $cardContent.appendChild($location)
     $cardContent.appendChild($tagline)
     $cardContent.appendChild($price)
 
-    // Append the$link and card content to the main container
+    // Append the $link and card content to the main container
     $container.appendChild($link)
     $container.appendChild($cardContent)
 
     return $container
   }
 
-  createPhotographerHeaderDOM () {
-    const $photographHeader = document.createElement('section')
-    $photographHeader.classList.add('photograph-header')
+  /**
+   * Create the DOM structure for the photographer header.
+   * @returns {HTMLElement} Photographer header element.
+   */
+  createPhotographerContainerDOM () {
+    const $photographerContainer = document.createElement('section')
+    $photographerContainer.classList.add('photographer-container')
 
     // Create elements for the photographer information
     const $photographerInfos = document.createElement('div')
@@ -89,30 +102,31 @@ class PhotographerTemplate {
     const $contactButton = document.createElement('button')
     $contactButton.classList.add('contact-button')
     $contactButton.textContent = 'Contactez-moi'
-    $contactButton.setAttribute('aria-label', 'Contact me {this._photographer.name}')
-    $contactButton.addEventListener('click', () => {
-      contactForm.displayModal()
-    })
+    $contactButton.setAttribute('aria-label', `Contact me ${this._photographer.name}`)
 
-    // Create elements for the photographer $thumbnail
+    // Create elements for the photographer thumbnail
     const $photographerThumbnail = document.createElement('div')
     $photographerThumbnail.classList.add('photograph-thumbnail')
 
     const $photographerImage = document.createElement('img')
     $photographerImage.src = this._photographer.portrait
-    $photographerImage.alt = 'Portrait de {this._photographer.name}'
+    $photographerImage.alt = `Portrait de ${this._photographer.name}`
 
-    // Append photographer $thumbnail elements to the container
+    // Append photographer thumbnail elements to the container
     $photographerThumbnail.appendChild($photographerImage)
 
     // Append all elements to the main container
-    $photographHeader.appendChild($photographerInfos)
-    $photographHeader.appendChild($contactButton)
-    $photographHeader.appendChild($photographerThumbnail)
+    $photographerContainer.appendChild($photographerInfos)
+    $photographerContainer.appendChild($contactButton)
+    $photographerContainer.appendChild($photographerThumbnail)
 
-    return $photographHeader
+    return $photographerContainer
   }
 
+  /**
+   * Create the DOM structure for the photographer info bar.
+   * @returns {HTMLElement} Photographer info bar element.
+   */
   createPhotographerInfoBar () {
     const $infoBar = document.createElement('aside')
     $infoBar.classList.add('info-bar')
@@ -125,7 +139,7 @@ class PhotographerTemplate {
 
     const $likesIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
     $likesIcon.classList.add('likes-icon')
-    $likesIcon.setAttribute('alt', 'Icône de coeur plein')
+    $likesIcon.setAttribute('alt', 'Filled heart icon')
     $likesIcon.setAttribute('viewBox', '0 0 512 512')
     $likesIcon.innerHTML = '<path d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z"/>'
 
@@ -144,4 +158,3 @@ class PhotographerTemplate {
 }
 
 export default PhotographerTemplate
-// {this._photographer.id}

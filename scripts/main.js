@@ -1,0 +1,10 @@
+import './factories/PhotographerFactory.js'
+import './templates/PhotographerTemplate.js'
+import './pages/App.js'
+import './utils/dropdown.js'
+import './utils/slideshow.js'
+import './utils/contactForm.js'
+import './factories/MediaFactory.js'
+
+import './templates/MediaTemplate.js'
+import './pages/Portfolio.js'

@@ -1,34 +1,55 @@
+/**
+ *
+ */
 class MediaTemplate {
-  constructor (media, photographers) {
+  /**
+   * Constructor for the MediaTemplate class.
+   * @param {Object} media - Media data.
+   */
+  constructor (media) {
     this._media = media
     this.figure = document.createElement('figure')
     this._mediaIdClass = `media-${this._media.id}`
   }
 
+  /**
+ * Information about a media thumbnail.
+ * @typedef {Object} mediaThumbnailInfo
+ * @property {HTMLElement} figure - The figure element.
+ * @property {string} mediaId - The media ID class.
+ * @property {string} src - The source of the media.
+ * @property {string} alt - The alternative text for the media.
+ * @property {string} type - The type of media ('img' for an image, 'video' for a video).
+ * @property {string} videoType - The video type (only for videos).
+ */
+
+  /**
+ * Create a media thumbnail.
+ * @returns {Object|null} Media thumbnail information or null if an error occurs.
+ */
   createMediaThumbnail () {
+    // object mediaView = the type of media, the src, the alt and the video type if the media is video
     if (!this._media || !this._media.mediaView) {
-      console.error('Erreur: Propriété "mediaView" non définie dans les données du média.')
-      return null // Ou une autre gestion d'erreur selon vos besoins
+      console.error('Error: "mediaView" property not defined in media data.')
+      return null
     }
 
     const { type, src, alt, videoType } = this._media.mediaView || {}
+    const $figcaption = this.figure.querySelector('figcaption')
 
-    if (type === 'img') {
-      const $img = document.createElement('img')
-      $img.classList.add('img-media', this._mediaIdClass)
-      $img.src = src
-      $img.alt = alt
-      this.figure.appendChild($img)
-    } else if (type === 'video') {
-      const $video = document.createElement('video')
-      $video.classList.add('video-media', this._mediaIdClass)
-      $video.src = src
-      $video.type = videoType || 'video/mp4'
-      $video.alt = alt
-      this.figure.appendChild($video)
+    // Create an img or video element based on the media type
+    const $mediaElement = type === 'img' ? document.createElement('img') : document.createElement('video')
+    $mediaElement.id = 'slide'
+    $mediaElement.classList.add(type === 'img' ? 'img-media' : 'video-media', this._mediaIdClass)
+    $mediaElement.src = src
+    if (type === 'video') {
+      $mediaElement.type = videoType || 'video/mp4'
     }
+    $mediaElement.alt = alt
 
-    // Créez un objet contenant les informations nécessaires
+    this.figure.insertBefore($mediaElement, $figcaption)
+
+    // Create an object containing useful information about the media (thumbnail)
     const mediaThumbnailInfo = {
       figure: this.figure,
       mediaId: this._mediaIdClass,
@@ -41,6 +62,10 @@ class MediaTemplate {
     return mediaThumbnailInfo
   }
 
+  /**
+   * Set media likes for the figure.
+   * @returns {Object} Media likes information.
+   */
   setMediaLikes () {
     this.figure.classList.add(this._mediaIdClass)
 
@@ -48,6 +73,10 @@ class MediaTemplate {
     return mediaLikes
   }
 
+  /**
+   * Create the DOM structure for the media card.
+   * @returns {HTMLElement} Media card element.
+   */
   createMediaCardDOM () {
     const $card = document.createElement('article')
 
@@ -70,9 +99,10 @@ class MediaTemplate {
 
     const $emptyHeartIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
     $emptyHeartIcon.classList.add('empty-heart-icon')
-    $emptyHeartIcon.setAttribute('alt', 'Icône de coeur vide')
+    $emptyHeartIcon.setAttribute('alt', 'Empty heart icon')
     $emptyHeartIcon.setAttribute('viewBox', '0 0 512 512')
-    $emptyHeartIcon.innerHTML = '<path d="M225.8 468.2l-2.5-2.3L48.1 303.2C17.4 274.7 0 234.7 0 192.8v-3.3c0-70.4 50-130.8 119.2-144C158.6 37.9 198.9 47 231 69.6c9 6.4 17.4 13.8 25 22.3c4.2-4.8 8.7-9.2 13.5-13.3c3.7-3.2 7.5-6.2 11.5-9c0 0 0 0 0 0C313.1 47 353.4 37.9 392.8 45.4C462 58.6 512 119.1 512 189.5v3.3c0 41.9-17.4 81.9-48.1 110.4L288.7 465.9l-2.5 2.3c-8.2 7.6-19 11.9-30.2 11.9s-22-4.2-30.2-11.9zM239.1 145c-.4-.3-.7-.7-1-1.1l-17.8-20c0 0-.1-.1-.1-.1c0 0 0 0 0 0c-23.1-25.9-58-37.7-92-31.2C81.6 101.5 48 142.1 48 189.5v3.3c0 28.5 11.9 55.8 32.8 75.2L256 430.7 431.2 268c20.9-19.4 32.8-46.7 32.8-75.2v-3.3c0-47.3-33.6-88-80.1-96.9c-34-6.5-69 5.4-92 31.2c0 0 0 0-.1 .1s0 0-.1 .1l-17.8 20c-.3 .4-.7 .7-1 1.1c-4.5 4.5-10.6 7-16.9 7s-12.4-2.5-16.9-7z"/>'
+    $emptyHeartIcon.innerHTML =
+      '<path d="M225.8 468.2l-2.5-2.3L48.1 303.2C17.4 274.7 0 234.7 0 192.8v-3.3c0-70.4 50-130.8 119.2-144C158.6 37.9 198.9 47 231 69.6c9 6.4 17.4 13.8 25 22.3c4.2-4.8 8.7-9.2 13.5-13.3c3.7-3.2 7.5-6.2 11.5-9c0 0 0 0 0 0C313.1 47 353.4 37.9 392.8 45.4C462 58.6 512 119.1 512 189.5v3.3c0 41.9-17.4 81.9-48.1 110.4L288.7 465.9l-2.5 2.3c-8.2 7.6-19 11.9-30.2 11.9s-22-4.2-30.2-11.9zM239.1 145c-.4-.3-.7-.7-1-1.1l-17.8-20c0 0-.1-.1-.1-.1c0 0 0 0 0 0c-23.1-25.9-58-37.7-92-31.2C81.6 101.5 48 142.1 48 189.5v3.3c0 28.5 11.9 55.8 32.8 75.2L256 430.7 431.2 268c20.9-19.4 32.8-46.7 32.8-75.2v-3.3c0-47.3-33.6-88-80.1-96.9c-34-6.5-69 5.4-92 31.2c0 0 0 0-.1 .1s0 0-.1 .1l-17.8 20c-.3 .4-.7 .7-1 1.1c-4.5 4.5-10.6 7-16.9 7s-12.4-2.5-16.9-7z"/>'
 
     const $heartIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
     $heartIcon.classList.add('heart-icon')

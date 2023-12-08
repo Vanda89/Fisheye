@@ -1,6 +1,39 @@
 .main-container {
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-container>* {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.main-container.form-filter>*:not(.contact-modal) {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.main-container.form-filter .contact-modal {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.main-container.slideshow-filter {
+    overflow-y: hidden;
+    position: fixed;
+    width: calc(100% - 200px);
+}
+
+.main-container.slideshow-filter>*:not(.slideshow-modal) {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.main-container.slideshow-filter .slideshow-modal {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 main {
@@ -8,7 +41,7 @@ main {
     flex-direction: column;
 }
 
-.photograph-header {
+.photographer-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -87,19 +120,24 @@ main {
 .dropdown {
     display: flex;
     position: relative;
-    width: 260px;
+
 
 }
 
-/* Cachez le select lorsque la classe open est présente */
 .dropdown.open #sortingDropdown {
     display: none;
 }
 
 
-.dropdown.open .chevron-down {
-    display: none;
-}
+.dropdown:not(.open) .chevron {
+    transform: rotate(0deg);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .dropdown.open .chevron {
+    transform: rotate(180deg);
+    transition: transform 0.3s ease-in-out;
+  }
 
 
 .dropdown.open #listbox {
@@ -114,26 +152,28 @@ main {
     font-size: 18px;
     color: black;
     font-weight: 700;
-    margin-right: 20px;
+    margin-right: 25px;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 69px;
-    width: 70px;
+    width: 75px;
 }
 
 .dropdown #sortingDropdown {
-    background: #901C1C;
-    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    height: 69px;
+    width: 170px;
+    padding-left: 21px;
     color: white;
     font-size: 18px;
     font-weight: 700;
-    height: 69px;
-    width: 170px;
-    padding-left: 20px;
     appearance: none;
-    transition: opacity 0.3s ease;
+    background: #901C1C;
     border: none;
+    border-radius: 5px;
+    transition: opacity 0.3s ease;
 }
 
 .dropdown #sortingDropdown:focus {
@@ -141,7 +181,7 @@ main {
 
 }
 
-.dropdown .chevron-down {
+.dropdown .chevron {
     display: block;
     position: absolute;
     top: 24px;
@@ -176,16 +216,16 @@ main {
     align-items: center;
 }
 
-#firstchoice {
-    border-radius: 5px 5px 0 0;
+#popularity {
+    border-radius: 5px;
+
 }
 
-#thirdchoice {
+#title {
     border-radius: 0 0 5px 5px;
     border-bottom: none;
 
 }
-
 
 .chevron-up {
     position: absolute;
@@ -194,8 +234,6 @@ main {
     width: 24px;
     height: 24px;
 }
-
-
 
 .card-container {
     display: grid;
@@ -208,86 +246,82 @@ main {
 
 .card-container article {
     width: 350px;
-
+    justify-self: center;
 }
 
-figcaption {
+.card-container figure {
     display: flex;
-    align-items: flex-start;
-}
-
-figure {
-    display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     justify-content: center;
     margin: 0;
     gap: 10px;
 
 }
 
-.card-likes-icons>* {
-    width: 24px;
-    height: 24px;
-}
-
-figure img {
+.card-container img {
     width: 350px;
     height: 300px;
     border-radius: 5px;
     object-fit: cover;
 }
 
-figure video {
+.card-container video {
     width: 350px;
     height: 300px;
     border-radius: 5px;
     object-fit: cover;
 }
 
-figcaption {
+.card-container figcaption {
     display: flex;
+    align-items: flex-start;
     justify-content: space-between;
 }
 
-figcaption h2 {
+.card-container h2 {
     color: var(--primary-color);
 }
 
-figcaption .card-likes {
+.card-container .card-likes {
     display: flex;
     gap: 4.625px;
     align-items: center;
 }
 
-figcaption .card-likes-number {
+.card-container .card-likes-number {
     color: var(--primary-color);
     font-size: 24px;
 }
 
-figcaption .card-likes-icons {
+.card-container .card-likes-icons {
     position: relative;
     width: 24px;
     height: 24px;
 }
 
-figcaption .empty-heart-icon {
+.card-container .card-likes-icons>* {
+    width: 24px;
+    height: 24px;
+}
+
+.card-container .empty-heart-icon {
     display: block;
 }
 
-figcaption .heart-icon {
+.card-container .heart-icon {
     position: absolute;
     fill: var(--primary-color);
     display: none;
-
 }
 
-figcaption .card-likes-icons.liked .empty-heart-icon {
+.card-container .card-likes-icons.liked .empty-heart-icon {
     display: none;
 }
 
-figcaption .card-likes-icons.liked .heart-icon {
+.card-container .card-likes-icons.liked .heart-icon {
     display: block;
 }
+
 
 
 
@@ -302,6 +336,7 @@ figcaption .card-likes-icons.liked .heart-icon {
     height: 73px;
     border-radius: 5px;
     background-color: var(--secondary-bg-color);
+    z-index: 2;
 }
 
 .info-bar {
@@ -329,41 +364,41 @@ figcaption .card-likes-icons.liked .heart-icon {
 
 
 
-#contact-modal {
+.contact-modal {
     display: none;
-    width: 50%;
-    max-height: calc(100vh - 124px);
-    position: absolute;
-    padding: 62px 0;
-    top: 0;
-    left: 25%;
-
 }
 
-.modal {
+.contact-modal.open {
+    display: flex;
+    width: 50%;
+    position: absolute;
+    margin: 62px 0;
+    top: 0;
+    left: 25%;
     border-radius: 5px;
     background-color: var(--secondary-bg-color);
-    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
     padding: 35px;
-    margin: auto;
+    box-shadow: -5px 10px 30px 0px rgba(0, 0, 0, 0.25);
 }
 
-.modal header {
-    align-items: baseline;
+.contact-modal header {
+    align-items: flex-start;
     justify-content: space-between;
     width: 100%;
     height: auto;
     padding: 0;
 }
 
-.modal header img {
-    cursor: pointer;
+.contact-modal .modal-header {
+    display: flex;
+    flex-direction: column;
 }
 
-.modal header h2 {
+
+.contact-modal header h2 {
     font-size: 64px;
     font-weight: normal;
     text-align: center;
@@ -372,12 +407,12 @@ figcaption .card-likes-icons.liked .heart-icon {
     padding-left: 5px;
 }
 
-.modal .modal-header {
-    display: flex;
-    flex-direction: column;
+.contact-modal .close-button {
+    fill: white;
+    padding: 0;
 }
 
-form {
+.contact-modal form {
     display: flex;
     width: 100%;
     flex-direction: column;
@@ -385,12 +420,12 @@ form {
     margin-top: 20px;
 }
 
-form label {
+.contact-modal form label {
     color: var(--grey-1);
     font-size: 36px;
 }
 
-form div {
+.contact-modal form div {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -398,16 +433,99 @@ form div {
     margin-bottom: 26px;
 }
 
-form input {
+.contact-modal form input {
     width: 100%;
     height: 68px;
     border: none;
     border-radius: 5px;
 }
 
-form textarea {
+.contact-modal form textarea {
     width: 100%;
     height: 170px;
     border: none;
     border-radius: 5px;
+}
+
+.contact-modal input:required,
+.contact-modal textarea:required {
+    border: var(--primary-color) 1px solid;
+}
+
+
+
+.slideshow-modal {
+    display: none;
+}
+
+.slideshow-modal {
+    border: none;
+    outline: none;
+}
+
+.slideshow-modal.isopening {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    align-self: center;
+    height: 100vh;
+    width: 100%;
+    max-width: 1240px;
+    position: absolute;
+    top: 0;
+    z-index: 3;
+    background-color: var(--base-color);
+    overflow: hidden;
+}
+
+/* Generic class */
+.icon-control {
+    display: flex;
+    width: 72px;
+    height: 72px;
+    border: none;
+    background: none;
+}
+
+.slideshow-modal svg {
+    width: 100%;
+    height: 100%;
+    fill: var(--primary-color);
+}
+
+.slideshow-modal #close-control {
+    position: absolute;
+    top: 62px;
+    right: 0px;
+}
+
+.slideshow-modal figure {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    margin: 0;
+    /** 100% - size of the two icons - left and right gap */
+    width: calc(100% - 72px - 72px - 12px - 12px);
+
+}
+
+
+.slideshow-modal figure>*:not(figcaption) {
+    height: calc(100% - 62px - 62px);
+    object-fit: cover;
+    width: 1050px;
+    margin: 62px 0;
+    align-self: center;
+
+}
+
+.slideshow-modal figcaption {
+    position: absolute;
+    bottom: -12px;
+    display: flex;
+    color: var(--primary-color);
+    font-size: 24px;
 }

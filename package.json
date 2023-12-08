@@ -1,13 +1,13 @@
 {
   "name": "project_6",
   "version": "1.0.0",
-  "description": "Rien à installer ici, il suffit d'ouvrir le fichier `index.html`.",
+  "description": "Bootcamp Project : Création d'un site de photographe.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "Sandrine Alcazar",
   "license": "ISC",
   "devDependencies": {
     "eslint": "^8.53.0",

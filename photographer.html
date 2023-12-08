@@ -2,8 +2,13 @@
 <html>
 
 <head>
+  <meta charset="UTF-8">
+  <meta name="language" content="fr">
+  <meta name="viewport" content="width=device-width, initial-scale=0.86, maximum-scale=5.0, minimum-scale=0.86" />
+  <meta name="description" content="Page personnelle du photographe avec son portfolio">
+  <meta name="theme-color" content="#ffffff">
+  <link href="css/normalize.scss-master/_normalize.scss" rel="stylesheet" type="text/css" />
   <link href="css/style.css" rel="stylesheet" type="text/css" />
-  <meta charset="utf-8">
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link href="https://fonts.googleapis.com/css?family=DM+Sans&display=swap" rel="stylesheet">
   <title>Fisheye - photographe </title>
@@ -13,25 +18,30 @@
   <div class="main-container">
     <header>
       <a href="./index.html">
-        <img src="assets/images/logo.png" class="logo" alt="Fisheye Home page"/>
+          <img src="assets/images/logo.png" class="logo" alt="Logo Fisheye lien vers la page d'accueil'" 
+          longdesc="Logo du site Fisheye avec nom écrit dans l'image et permettant de revenir à la page d'accueil' " />
       </a>
     </header>
     <main id="main">
       <section class="portfolio-section">
-        <div class="dropdown-container"></div> 
-        <div class="card-container"></div>       
-        <div class="info-bar-container"></div>       
+        <div class="dropdown-container"></div>
+        <div class="card-container"></div>
+        <div class="info-bar-container"></div>
       </section>
     </main>
-    <script type="module" src="scripts/utils/contactForm.js"></script>
-    <script type="module" src="scripts/utils/dropdown.js"></script>
-    <script type="module" src="scripts/factories/MediaFactory.js"></script>
-    <script type="module" src="scripts/factories/PhotographerFactory.js"></script>
-    <script type="module" src="scripts/templates/PhotographerTemplate.js"></script>
-    <script type="module" src="scripts/templates/MediaTemplate.js"></script>
-    <script type="module" src="scripts/pages/Portfolio.js"></script>
-    <script src="scripts/utils/contactForm.js"></script>
-  </div>
+    <!--  
+      <script type="module" src="scripts/utils/dropdown.js"></script>
+      <script type="module" src="scripts/utils/slideshow.js"></script>
+      <script type="module" src="scripts/utils/contactForm.js"></script>
+      <script type="module" src="scripts/factories/MediaFactory.js"></script>
+      <script type="module" src="scripts/factories/PhotographerFactory.js"></script>
+      <script type="module" src="scripts/templates/PhotographerTemplate.js"></script>
+      <script type="module" src="scripts/templates/MediaTemplate.js"></script>
+      <script type="module" src="scripts/pages/Portfolio.js"></script>
+    -->
+
+    <script type="module" src="scripts/main.js"></script>
+    </div>
 </body>
 
 </html>

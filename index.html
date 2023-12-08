@@ -2,9 +2,13 @@
 <html lang="fr">
 
 <head>
+  <meta charset="UTF-8">
+  <meta name="language" content="fr">
+  <meta name="viewport" content="width=device-width, initial-scale=0.86, maximum-scale=5.0, minimum-scale=0.86" />
+  <meta name="description" content="Page d'accueil du site'">
+  <meta name="theme-color" content="#ffffff">
   <link href="css/normalize.scss-master/_normalize.scss" rel="stylesheet" type="text/css" />
   <link href="css/style.css" rel="stylesheet" type="text/css" />
-  <meta charset="utf-8">
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link href="https://fonts.googleapis.com/css?family=DM+Sans&display=swap" rel="stylesheet">
   <title>Fisheye</title>
@@ -12,10 +16,9 @@
 
 <body>
   <div class="home-container">
-
     <header>
       <a href="./index.html">
-        <img src="./assets/images/logo.png" class="logo" alt="Fisheye Home page" />
+        <img src="assets/images/logo.png" class="logo" alt="Logo Fisheye lien vers la page d'accueil'" longdesc="Logo du site Fisheye avec nom écrit dans l'image et permettant de recharger la page d'accueil' " />
       </a>
       <h1 class="photographers">Nos photographes</h1>
     </header>
@@ -23,10 +26,14 @@
     <main id="main">
       <section class="photographers-section"></section>
     </main>
-    
-    <script type="module" src="scripts/factories/PhotographersFactory.js"></script>
-    <script type="module" src="scripts/templates/PhotographerTemplate.js"></script>
-    <script type="module" src="scripts/pages/App.js"></script>
+    <script type="module" src="scripts/main.js"></script>
+
+    <!-- 
+
+      <script type="module" src="scripts/factories/PhotographersFactory.js"></script>
+      <script type="module" src="scripts/templates/PhotographerTemplate.js"></script>
+      <script type="module" src="scripts/pages/App.js"></script>
+    -->
   </div>
 </body>
 
