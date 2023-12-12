@@ -91,7 +91,7 @@ const dropdown = {
   },
 
   initDropdown (sortOption) {
-    const $sortingDropdown = document.querySelector('.sortingDropdown')
+    const $sortingDropdown = document.getElementById('sortingDropdown')
     const $popularityButton = document.getElementById('popularity')
     const $dateButton = document.getElementById('date')
     const $titleButton = document.getElementById('title')
@@ -99,7 +99,8 @@ const dropdown = {
 
     if ($sortingDropdown) { $sortingDropdown.textContent = sortOption }
 
-    $popularityButton?.addEventListener('click', () => {
+    $popularityButton?.addEventListener('click', (event) => {
+      event.stopPropagation()
       const newSortOption = 'Popularité' // Replace with your actual sort option
       portfolio.handleSortDropdown(newSortOption)
       $sortingDropdown.textContent = newSortOption
@@ -108,7 +109,8 @@ const dropdown = {
       }
     })
 
-    $dateButton?.addEventListener('click', () => {
+    $dateButton?.addEventListener('click', (event) => {
+      event.stopPropagation()
       const newSortOption = 'Date' // Replace with your actual sort option
       portfolio.handleSortDropdown(newSortOption)
       $sortingDropdown.textContent = newSortOption
@@ -117,7 +119,8 @@ const dropdown = {
       }
     })
 
-    $titleButton?.addEventListener('click', () => {
+    $titleButton?.addEventListener('click', (event) => {
+      event.stopPropagation()
       const newSortOption = 'Titre' // Replace with your actual sort option
       portfolio.handleSortDropdown(newSortOption)
       $sortingDropdown.textContent = newSortOption
@@ -129,6 +132,7 @@ const dropdown = {
     if ($dropdown) {
       $dropdown.addEventListener('click', (event) => {
         event.preventDefault() // Prevent default form submission
+        event.stopPropagation() // Stop event propagation
         $dropdown.classList.toggle('open', true)
       })
     }
@@ -137,7 +141,7 @@ const dropdown = {
 
       document.addEventListener('click', (event) => {
         const isClickInside = $dropdown.contains(event.target)
-        if (!isClickInside) {
+        if (!isClickInside && $dropdown.classList.contains('open')) {
           $dropdown.classList.remove('open')
         }
       })

@@ -14,18 +14,24 @@ export class Portfolio {
   constructor () {
     this.photographerFactory = new PhotographerFactory()
     this.mediaFactory = new MediaFactory('')
-    this.$mainContainer = document.querySelector('.main-container')
-    this.$main = document.getElementById('main')
-    this.$mediaContainer = document.querySelector('.portfolio-section')
-    this.$dropdownContainer = document.querySelector('.dropdown-container')
-    this.$cardContainer = document.querySelector('.card-container')
-    this.$infoBarContainer = document.querySelector('.info-bar-container')
     this.$slideshowDOM = slideshow.createSlideshow()
     this.slideshowCardList = []
     this.clickedIndex = this.currentElement
     this.globalMediaData = null
-    this.globalCloneMediaElement = null
-    this.slideshowFirstOpen = false
+    this.leftListener = this.leftListener.bind(this)
+    this.rightListener = this.rightListener.bind(this)
+
+    this.photographer = null
+    this.mediasData = []
+    this.globalMediaElement = null
+
+    this.$mainContainer = document.querySelector('.main-container')
+    this.$main = document.getElementById('main')
+    this.$mediaContainer = document.querySelector('.portfolio-section')
+    this.$dropdownContainer = document.querySelector('.dropdown-container')
+    this.$dropdown = document.querySelector('.dropdown')
+    this.$cardContainer = document.querySelector('.card-container')
+    this.$infoBarContainer = document.querySelector('.info-bar-container')
   }
 
   /**
@@ -87,9 +93,12 @@ export class Portfolio {
         (response) => response.json()
       )
       // Map each media item in the JSON data to a media object using the factory
-      const mediasData = mediaObject.media.map((media) =>
-        this.mediaFactory.createMedia(media)
-      )
+      const mediasData = mediaObject.media.map((media) => {
+        // Add isLiked property to media and set it to false
+        media.isLiked = false
+        // console.log(media);
+        return this.mediaFactory.createMedia(media)
+      })
       return mediasData
     } catch (error) {
       console.error('Erreur lors du chargement du fichier JSON :', error)
@@ -109,38 +118,95 @@ export class Portfolio {
     // console.log('All Media:', media)
 
     // Filter and sort media based on the specified sort option
-    let sortedMedia
+    let result = []
     if (sortOption === 'Popularité') {
-      sortedMedia = media
+      result = media
         .filter((media) => media.photographerId === mediaPhotographerId)
         .sort((a, b) => b.likes - a.likes)
       // console.log('1', sortedMedia)
     } else if (sortOption === 'Date') {
-      sortedMedia = media
+      result = media
         .filter((media) => media.photographerId === mediaPhotographerId)
         .sort((a, b) => b.date.localeCompare(a.date))
       // console.log('2', sortedMedia)
     } else if (sortOption === 'Titre') {
-      sortedMedia = media
+      result = media
         .filter((media) => media.photographerId === mediaPhotographerId)
         .sort((a, b) => b.title.localeCompare(a.title))
       // console.log('3', sortedMedia)
     }
-
-    // console.log('Sorted Media:', sortedMedia)
-    //  console.log(sortOption)
-
-    return sortedMedia
+    console.log(result);
+    return result
   }
 
-  async displayHeaderData () {
+  /**
+   * Appends a child to a parent element.
+   * @param {Node} parent - The parent element.
+   * @param {Node} child - The child element to be appended.
+   */
+  appendChildToParent (parent, child) {
+    if (!(parent instanceof Node)) {
+      console.error('parent must be a Node')
+      return
+    }
+    if (!(child instanceof Node)) {
+      console.error('child must be a Node')
+      return
+    }
+    parent.appendChild(child)
+  }
+
+  /**
+   * Removes all child nodes from a parent node.
+   * @param {Node} parent - The parent node.
+   */
+  removeAllChildrenFromParent (parent) {
+    while (parent.firstChild) {
+      parent.removeChild(parent.firstChild)
+    }
+  }
+
+  /**
+   * Gets the text content of an element.
+   * @param {Node} element - The element.
+   * @return {string} The text content of the element.
+   */
+  getTextContent (element) {
+    if (!(element instanceof Node)) {
+      console.error('element must be a Node')
+      return
+    }
+    return element.textContent
+  }
+
+  /**
+   * Sets the text content of an element.
+   * @param {Node} element - The element.
+   * @param {string} text - The text content to set.
+   * @return {void}
+   */
+  setTextContent (element, text) {
+    if (!(element instanceof Node)) {
+      console.error('element must be a Node')
+      return
+    }
+    element.textContent = text
+  }
+
+  async handlePhotographersData () {
     const photographerId = await this.getPhotographerIdFromUrl()
 
     // Retrieve photographer data based on the ID
-    const photographer = await this.getPhotographerById(photographerId)
+    this.photographer = await this.getPhotographerById(photographerId)
 
+    console.log(this.photographer)
+  }
+
+  async displayHeaderData () {
+    console.log(this.photographer)
     // Instantiating PhotographerTemplate with phothographer object passed in parameters
-    const photographerModel = new PhotographerTemplate(photographer)
+    const photographerModel = new PhotographerTemplate(this.photographer)
+    console.log(photographerModel)
 
     // Create the DOM for the detailed photographer information section, including portrait
     const $photographerContainer =
@@ -148,16 +214,18 @@ export class Portfolio {
 
     // Contact Form logic
     const $contactFormDOM = contactForm.createContactForm()
-    this.$mainContainer?.appendChild($contactFormDOM)
+    this.appendChildToParent(this.$mainContainer, $contactFormDOM)
+
     // Update the photographer's name in the contact form dynamically
     const $photographerName = document.querySelector('h2.photograph-name')
     if ($photographerName) {
-      $photographerName.textContent = photographer._name
+      this.setTextContent($photographerName, this.photographer._name)
     }
 
     this.$main?.insertBefore($photographerContainer, this.$mediaContainer)
+
     // Handle interactions with the contact form after inserting the photographer section
-    this.handleContactForm(photographerId)
+    this.handleContactForm(this.photographer._id)
   }
 
   /**
@@ -222,155 +290,169 @@ export class Portfolio {
     }
   }
 
-  async displayPortfolioData (sortOption = 'Popularité') {
-    const photographerId = await this.getPhotographerIdFromUrl()
-
-    // Retrieve photographer data based on the ID
-    const photographer = await this.getPhotographerById(photographerId)
-    const photographerFirstName = photographer._name
+  setMediaFullPaths (src) {
+    const photographerFirstName = this.photographer._name
       .split(' ')[0]
       .replace(/-/g, ' ')
     // console.log(photographerFirstName)
+
+    const mediaFullPath =
+    window.location.origin +
+    '/assets/photographers/Sample_Photos/' +
+    photographerFirstName +
+    '/' +
+    src
+
+    return mediaFullPath
+  }
+
+  mapMediaList (type, mediaId, src, media) {
+    // Construct a CSS selector to target media elements based on their type and ID
+    const mediaSelector = `.${type}-media.${mediaId}`
+    // console.log(mediaSelector)
+    const $mediaList = document.querySelectorAll(mediaSelector)
+    // console.log($mediaList)
+
+    // Iterate through the list of media elements and set the source and accessibility attributes
+    $mediaList.forEach((mediaElement) => {
+      // Set the source and accessibility attributes for the media element
+      mediaElement.src = this.setMediaFullPaths(src)
+      mediaElement.setAttribute('aria-label', 'image closeup view')
+      mediaElement.focus()
+
+      // Add the cloned media element to the slideshowCardList, which keeps track of all media elements.
+      this.slideshowCardList.push(mediaElement)
+      // console.log('cloneMediaElement', cloneMediaElement)
+      this.handleClickMedia(mediaElement, media)
+    })
+    // console.log('cool')
+    // console.log($mediaList)
+  }
+
+  handleClickMedia (mediaElement, media) {
+    // Add a click event listener to the media element to trigger the slideshow
+    mediaElement?.addEventListener('click', () => {
+      // Extract the unique media ID from the element's class and parse it for further use
+      const elementClass = mediaElement.classList[1]
+      // console.log('elementClass', elementClass)
+      const mediaId = parseInt(elementClass.split('-')[1])
+      // console.log('mediaId', mediaId)
+
+      // Find the index of the clicked media in the mediasData array
+      this.clickedIndex = this.findMediaById(this.mediasData, mediaId)
+      // console.log('Clicked Index:', this.clickedIndex) // Ajoutez ce log pour voir la valeur de clickedIndex
+
+      // Trigger slideshow actions when a media element is clicked
+      slideshow.handleSlideshow(true)
+      this.setElementsSlideshow(mediaElement, media)
+
+      // Set the current element to the index of the media that was clicked
+      // This ensures that the slideshow starts from the clicked media and synchronizes
+      // with the corresponding index in the mediasData array
+      this.currentElement = this.clickedIndex
+      // console.log('Initial Current Element:', this.currentElement)
+
+      this.handleSlideshowPosition(
+        this.slideshowCardList,
+        this.mediasData
+      )
+      console.log('mediasData', this.slideshowCardList)
+      console.log('mediasData', this.mediasData)
+    })
+  }
+
+  async displayPortfolioData (sortOption = 'Popularité') {
     const dropdownData = dropdown.createDropdown()
-    this.$dropdownContainer?.appendChild(dropdownData)
-    console.log(dropdownData);
-    
+    this.appendChildToParent(this.$dropdownContainer, dropdownData)
+
+    console.log(this.photographer._id);
     // Retrieve and sort media items for the current photographer
-    const mediasData = await this.getMediaByPhotographer(
-      photographerId,
+    dropdown.initDropdown(sortOption)
+    console.log('before', this.mediasData);
+    this.mediasData = await this.getMediaByPhotographer(
+      this.photographer.id,
       sortOption
       )
-      const test = dropdown.initDropdown(sortOption)
-     console.log('test')
-    
+      console.log(this.mediasData);
+      console.log('after', this.mediasData);
 
-    this.$mainContainer?.appendChild(this.$slideshowDOM)
 
-    if (mediasData !== undefined) {
-      mediasData.forEach((media) => {
-      // Instantiating MediaTemplate with media object passed in parameters.
+    const $slideshowDOM = document.querySelector('.slideshow-modal')
+    if (!$slideshowDOM) {
+      // Only append the slideshow modal if it doesn't exist yet
+      this.appendChildToParent(this.$mainContainer, this.$slideshowDOM)
+    }
+
+    if (this.mediasData !== undefined) {
+      this.mediasData.forEach((media) => {
+        // Instantiating MediaTemplate with media object passed in parameters.
         const mediaModel = new MediaTemplate(media)
-        console.log(mediaModel)
+
         // Creation of the DOM of the article containing the media and their information.
-        const mediaCardDOM = mediaModel.createMediaCardDOM()
-        console.log(mediaCardDOM)
+        const mediaCardDOM = mediaModel.createMediaCardDOM(media)
+        // console.log(mediaCardDOM)
 
-        this.$cardContainer?.appendChild(mediaCardDOM)
+        this.appendChildToParent(this.$cardContainer, mediaCardDOM)
 
-        // Create a media thumbnail and retrieve information about the media, including
-        // the media element (<img> or <video>), its ID, the complete <figure> container,
-        // the source URL, alt text, media type (image or video), and video format if applicable.
         const mediaThumbnail = mediaModel.createMediaThumbnail()
 
-        const mediaFullPath =
-        window.location.origin +
-        '/assets/photographers/Sample_Photos/' +
-        photographerFirstName +
-        '/' +
-        mediaThumbnail.src
-
-        // Media Likes Logic:
-        // Obtain information about the likes for the current media using the media model, including the unique media card ID.
-        // Find the corresponding media card in the document based on its ID and,
-        // if found, handle click events for the likes icon and likes count.
         const mediaLikes = mediaModel.setMediaLikes()
         const mediaCardId = mediaLikes.mediaCardId
-        console.log(mediaCardId)
         const $figureMediaCard = document.querySelector(
           '.card-content.' + mediaCardId
         )
 
         if ($figureMediaCard) {
           const $cardLikesIcon =
-          $figureMediaCard.querySelector('.card-likes-icons')
+            $figureMediaCard.querySelector('.card-likes-icons')
           const $likesElement =
-          $figureMediaCard.querySelector('.card-likes-number')
-          this.handleLikesClick($cardLikesIcon, $likesElement)
+            $figureMediaCard.querySelector('.card-likes-number')
+          // console.log($likesElement)
+
+          this.handleLikesClick($cardLikesIcon, $likesElement, this.mediasData, mediaCardId, (updatedMediasDataClone, isLiked) => {
+            console.log(updatedMediasDataClone, isLiked)
+            this.mediasData = updatedMediasDataClone
+          })
+
+          // console.log('After calling handleLikesClick', mediasDataClone)
         }
 
-        // Construct a CSS selector to target media elements based on their type and ID
-        const mediaSelector = `.${mediaThumbnail.type}-media.${mediaThumbnail?.mediaId}`
-        const $mediaList = document.querySelectorAll(mediaSelector)
-        // console.log($mediaList)
-
-        $mediaList.forEach((mediaElement) => {
-        // Set the source and accessibility attributes for the media element
-          mediaElement.src = mediaFullPath
-          mediaElement.setAttribute('aria-label', 'image closeup view')
-          mediaElement.focus()
-
-          // Clone the clicked media element to create a duplicate for the slideshow
-          const cloneMediaElement = mediaElement.cloneNode(false)
-          // Add the cloned media element to the slideshowCardList, which keeps track of all media elements.
-          this.slideshowCardList.push(cloneMediaElement)
-          console.log('cloneMediaElement', cloneMediaElement)
-
-          mediaElement?.addEventListener('click', () => {
-          // Extract the unique media ID from the element's class and parse it for further use
-            const elementClass = mediaElement.classList[1]
-            console.log('elementClass', elementClass)
-            const mediaId = parseInt(elementClass.split('-')[1])
-            console.log('mediaId', mediaId)
-
-            // Find the index of the clicked media in the mediasData array
-            this.clickedIndex = mediasData.findIndex(
-              (media) => media._id === mediaId
-            )
-            console.log('Clicked Index:', this.clickedIndex) // Ajoutez ce log pour voir la valeur de clickedIndex
-
-            // Trigger slideshow actions when a media element is clicked
-            slideshow.handleSlideshow(true)
-            // this.setElementsSlideshow(cloneMediaElement, media)
-
-            // Set the current element to the index of the media that was clicked
-            // This ensures that the slideshow starts from the clicked media and synchronizes
-            // with the corresponding index in the mediasData array
-            this.currentElement = this.clickedIndex
-            console.log('Initial Current Element:', this.currentElement)
-
-            //  this.handleSlideshowPosition(this.slideshowCardList, mediasData, cloneMediaElement)
-            console.log('mediasData', mediasData)
-          })
-        })
+        const test = this.mapMediaList(mediaThumbnail.type, mediaThumbnail.mediaId, mediaThumbnail.src, media)
+        console.log(test)
       })
     } else {
       console.error('Array is undefined')
     }
     // Instantiate PhotographerTemplate to display photographer information in the info bar
-    const photographerModel = new PhotographerTemplate(photographer)
+    const photographerModel = new PhotographerTemplate(this.photographer)
     const photographerInfoBar = photographerModel.createPhotographerInfoBar()
-    this.$infoBarContainer?.appendChild(photographerInfoBar)
+    this.appendChildToParent(this.$infoBarContainer, photographerInfoBar)
     this.setTotalLikes() // Update total likes count
   }
 
-  /**
-   * Create a cloned copy of a media element.
-   * @param {HTMLElement} mediaElement - The original media element to be cloned.
-   * @returns {HTMLElement} - The cloned media element.
-   */
-  async createCloneElementFromMedia (mediaElement) {
-    const cloneMediaElement = mediaElement.cloneNode(true)
-    console.log('cloneMediaElement', cloneMediaElement)
-
-    return cloneMediaElement
-  }
-
-  /**
-   * Display sorted media elements in the slideshow.
-   * @param {Array<Promise<HTMLElement>>} sortedMediasPromises - Array of promises representing media elements.
-   */
   async displaySortedMedias (sortedMediasPromises) {
     this.slideshowCardList.length = 0
 
-    const promisesArray = Array.from(sortedMediasPromises)
+    if (!Array.isArray(sortedMediasPromises)) {
+      console.error('sortedMediasPromises is not an array')
+      return
+    }
+
+    const promisesArray = [...sortedMediasPromises]
 
     //  Iterate through an array of promises representing media elements, resolve each promise,
     // create cloned copies of the media elements and add them to the slideshow card list.
     for (const mediaElementPromise of promisesArray) {
       const mediaElement = await mediaElementPromise
-      const cloneMediaElement = this.createCloneElementFromMedia(mediaElement)
+      const cloneMediaElement = this.createCloneMediaElement(mediaElement)
       this.slideshowCardList.push(cloneMediaElement)
     }
+
+    /*   // After displaying the sorted medias...
+    const $newFigureMediaCards = document.querySelectorAll('.card-content')
+    const likes = this.updateLikesData($newFigureMediaCards, mediasDataClone)
+    console.log(likes)
+    this.updateLikesData($newFigureMediaCards, mediasDataClone) */
   }
 
   /**
@@ -379,21 +461,33 @@ export class Portfolio {
    * @param {string} sortOption - The selected sorting option ('popularity', 'date', or 'title').
    */
   async handleSortDropdown (sortOption) {
-    this.$cardContainer.innerHTML = ''
-    this.$dropdownContainer.innerHTML = ''
-    this.$infoBarContainer.innerHTML = ''
-    await this.displayPortfolioData(sortOption)
-    console.log(sortOption)
+    this.removeAllChildrenFromParent(this.$cardContainer)
+    this.removeAllChildrenFromParent(this.$infoBarContainer)
+    this.removeAllChildrenFromParent(this.$dropdownContainer)
+
+    this.handlePhotographersData()
+    const mediasData = await this.displayPortfolioData(sortOption)
+    // console.log(sortOption)
+    // console.log(mediasDataClone);
+    console.log(mediasData);
 
     const $sortingDropdown = document.querySelector('.sortingDropdown')
     if ($sortingDropdown) {
-      $sortingDropdown.textContent = sortOption
+      this.setTextContent($sortingDropdown, sortOption)
     } else {
       console.error('Unable to find element with class sortingDropdown')
     }
 
-    const mediasPromises = this.getMediaByPhotographer()
-    this.displaySortedMedias(mediasPromises)
+    const sortedMediasPromises = mediasData.map((media) =>
+      Promise.resolve(media)
+    )
+
+    if (!Array.isArray(sortedMediasPromises)) {
+      console.error('sortedMediasPromises is not an array')
+      return
+    }
+
+    await this.displaySortedMedias(sortedMediasPromises)
   }
 
   /**
@@ -402,21 +496,72 @@ export class Portfolio {
    * @param {Element} $likesElement - The element displaying the likes count.
    * @returns {boolean} - The updated like status (true if liked, false otherwise).
    */
-  async handleLikesClick ($cardLikesIcon, $likesElement) {
+  handleLikesClick (
+    $cardLikesIcon,
+    $likesElement,
+    mediasData,
+    mediaCardId,
+    callback
+  ) {
     let isLiked = false
-
+    // console.log('Inside handleLikesClick before like click', mediasData)
     $cardLikesIcon.addEventListener('click', () => {
-      isLiked = !isLiked
-      $cardLikesIcon.classList.toggle('liked', isLiked)
+      try {
+        // Toggle the 'liked' state and toggle the 'liked' class on the icon, depending on whether the card is liked.
+        isLiked = !isLiked
+        $cardLikesIcon.classList.toggle('liked', isLiked)
 
-      let currentLikes = parseInt($likesElement.textContent)
-      currentLikes = isLiked ? currentLikes + 1 : currentLikes - 1
-      $likesElement.textContent = currentLikes
+        // Update the likes count
+        let currentLikes = parseInt(this.getTextContent($likesElement))
+        currentLikes = isLiked ? currentLikes + 1 : currentLikes - 1
+        this.setTextContent($likesElement, currentLikes.toString())
 
-      this.setTotalLikes() // Update total likes in the info bar
+        this.setTotalLikes() // Update total likes in the info bar
+
+        // Find the index of the media with the matching mediaCardId in mediasData
+        const mediaIndex = this.findMediaById(
+          mediasData,
+          parseInt(mediaCardId.split('-')[1])
+        )
+
+        if (mediaIndex !== -1) {
+          // Update the media data
+          mediasData[mediaIndex]._isLiked = isLiked
+          mediasData[mediaIndex]._likes = currentLikes
+        }
+        console.log(parseInt(mediaCardId.split('-')[1]))
+        console.log(mediaIndex)
+        console.log(isLiked)
+        console.log('Inside handleLikesClick', mediasData[mediaIndex]._isLiked)
+        console.log('Inside handleLikesClick', mediasData[mediaIndex]._likes)
+        console.log('Inside handleLikesClick', mediasData)
+      } catch (error) {
+        console.error('An error occurred:', error)
+      }
+      callback(mediasData, isLiked)
     })
+  }
 
-    return isLiked
+  /**
+   * Finds the index of a media item in the given array by its id.
+   * @param {Array} mediasData - The array of media items.
+   * @param {string} mediaCardId - The ID of the media item.
+   * @returns {number} - The index of the media item in the array, or -1 if not found.
+   */
+  findMediaById (mediasDataClone, mediaCardId) {
+    console.log('mediaCardId:', mediaCardId)
+
+    // Check if mediaCardId is a number
+    if (typeof mediaCardId !== 'number') {
+      console.error('mediaCardId must be a number')
+      return -1
+    }
+    console.log(mediasDataClone)
+    const mediaIndex = mediasDataClone.findIndex(
+      (media) => media._id === mediaCardId
+    )
+    console.log('findMediaById mediaIndex:', mediaIndex)
+    return mediaIndex
   }
 
   /**
@@ -433,130 +578,144 @@ export class Portfolio {
     })
 
     const $totalLikes = document.querySelector('.likes-number')
-    $totalLikes.textContent = totalLikes
+    this.setTextContent($totalLikes, totalLikes)
 
     return totalLikes
   }
 
-  /**
-   * Sets the elements in the slideshow with the provided media element and associated data.
-   * @param {Node} cloneMediaElement - The cloned media element to be added to the slideshow.
-   * @param {Object} media - The media data associated with the cloned element.
-   */
-  /* async setElementsSlideshow (cloneMediaElement, media) {
-    // console.log('setElementsSlideshow', media)
-    // console.log('setElementsSlideshow', cloneMediaElement)
+  async setElementsSlideshow (mediaElement, media) {
     const $slideshowCard = this.$slideshowDOM.querySelector('figure')
     const $slideshowCardLegend = this.$slideshowDOM.querySelector('figcaption')
     const $slideshowCardTitle = this.$slideshowDOM.querySelector('h3')
-    // Remove all child nodes from the slideshow figure
-    while ($slideshowCard.firstChild) {
-      $slideshowCard.removeChild($slideshowCard.firstChild)
-    }
-    // Check if cloneMediaElement is a DOM node before adding it to the slideshow
-    if (cloneMediaElement instanceof Node) {
-      $slideshowCard.appendChild(cloneMediaElement)
-      // Update the title in the slideshow with the provided media's title
-      if (media) {
-        $slideshowCardTitle.textContent = media.title
-      }
 
-      if (cloneMediaElement.classList.contains('video-media')) {
-        cloneMediaElement.setAttribute('controls', '')
-      }
+    // Remove all child nodes from the slideshow figure
+    this.removeAllChildrenFromParent($slideshowCard)
+
+    // Create a new media element for the slideshow
+    let slideshowMediaElement
+    if (mediaElement.classList.contains('video-media')) {
+      slideshowMediaElement = document.createElement('video')
+      slideshowMediaElement.setAttribute('controls', '')
+    } else {
+      slideshowMediaElement = document.createElement('img')
     }
-    // console.log('setElementsSlideshow', $slideshowCard)
-    // console.log('setElementsSlideshow', $slideshowCardLegend)
-    $slideshowCard.appendChild($slideshowCardLegend)
+    slideshowMediaElement.src = mediaElement.src
+    slideshowMediaElement.classList = mediaElement.classList
+
+    // Add the new media element to the slideshow
+    this.appendChildToParent($slideshowCard, slideshowMediaElement)
+
+    // Update the title in the slideshow with the provided media's title
+    if (media) {
+      this.setTextContent($slideshowCardTitle, media.title)
+    } else {
+      console.error('mediaElement must be a Node')
+      return
+    }
+
+    this.appendChildToParent($slideshowCard, $slideshowCardLegend)
   }
 
   leftListener () {
-    this.handleArrowClick(-1, this.slideshowCardList, this.globalMediaData, this.globalCloneMediaElement)
+    this.handleArrowClick(-1)
   }
 
   rightListener () {
-    this.handleArrowClick(1, this.slideshowCardList, this.globalMediaData, this.globalCloneMediaElement)
+    this.handleArrowClick(1)
   }
 
   /**
- * Handles the position (left or right) in the slideshow and updates the displayed content accordingly.
- * @param {Element[]} slideshowCardList - List of media elements in the slideshow.
- * @param {Media[]} mediasData - List of media data objects.
- * @param {Element} cloneMediaElement - Cloned media element for the slideshow.
- */
-  /*  async handleSlideshowPosition (slideshowCardList, mediasData, cloneMediaElement) {
+   * Handles the position (left or right) in the slideshow and updates the displayed content accordingly.
+   * @param {Element[]} slideshowCardList - List of media elements in the slideshow.
+   * @param {Media[]} mediasData - List of media data objects.
+   * @param {Element} mediaElement - Cloned media element for the slideshow.
+   */
+  handleSlideshowPosition (
+    slideshowCardList,
+    mediasData
+  ) {
     //   console.log('handleSlideshowPosition', this.slideshowCardList)
-    console.log('handleSlideshowPosition', mediasData)
-    console.log('handleSlideshowPosition', cloneMediaElement)
+    // console.log('handleSlideshowPosition', mediasData)
+    // console.log('handleSlideshowPosition', mediaElement)
     const $leftArrow = this.$slideshowDOM.querySelector('.left-control')
     const $rightArrow = this.$slideshowDOM.querySelector('.right-control')
 
-    this.globalMediaData = mediasData
-    this.globalCloneMediaElement = cloneMediaElement
+    if (!$leftArrow || !$rightArrow) {
+      console.error(
+        'Les éléments de contrôle de la diapositive ne sont pas trouvés'
+      )
+      return
+    }
 
-    // if (!this.slideshowFirstOpen) {
-    $leftArrow?.removeEventListener('click', this.leftListener.bind(this))
-    $rightArrow?.removeEventListener('click', this.rightListener.bind(this))
+    $leftArrow.removeEventListener('click', this.leftListener)
+    $rightArrow.removeEventListener('click', this.rightListener)
 
     this.currentElement = this.clickedIndex
 
-    $leftArrow?.addEventListener('click', this.leftListener.bind(this))
-    $rightArrow?.addEventListener('click', this.rightListener.bind(this))
-
-    // this.slideshowFirstOpen = true
-    //  }
-
-    document.removeEventListener('keydown', (event) => {
-      this.handleKeyboardControls(event, this.slideshowCardList, mediasData, cloneMediaElement)
-    })
+    $leftArrow.addEventListener('click', this.leftListener)
+    $rightArrow.addEventListener('click', this.rightListener)
 
     document.addEventListener('keydown', (event) => {
-      this.handleKeyboardControls(event, this.slideshowCardList, mediasData, cloneMediaElement)
+      this.handleKeyboardControls(event, this.mediasData, this.slideshowCardList[this.currentElement])
     })
 
     const closeButton = document.getElementById('close-control')
-    closeButton?.addEventListener('click', () => {
-      slideshow.handleSlideshow(false)
-      this.currentElement = 0
-      console.log(this.currentElement);
-    })
-
+    if (closeButton) {
+      closeButton.addEventListener('click', () => {
+        slideshow.handleSlideshow(false)
+        this.currentElement = 0
+      //  console.log(this.currentElement)
+      })
+    } else {
+      console.error("Le bouton de fermeture de la diapositive n'est pas trouvé")
+    }
   }
-/*
+
   /**
    * Handles arrow clicks for slideshow navigation.
    * @param {number} direction - The direction of the navigation (-1 for left, 1 for right).
    * @param {Element[]} slideshowCardList - List of media elements in the slideshow.
    * @param {Media[]} mediasData - List of media data objects.
-   * @param {Element} cloneMediaElement - Cloned media element for the slideshow.
+   * @param {Element} mediaElement - Cloned media element for the slideshow.
    */
-  /* async handleArrowClick (direction, slideshowCardList, mediasData, cloneMediaElement) {
-  //  console.log('handleArrowClick', direction)
-  //  console.log('handleArrowClick', this.slideshowCardList)
-  //  console.log('handleArrowClick', mediasData)
-    // console.log('handleArrowClick', cloneMediaElement)
+  async handleArrowClick (
+    direction,
+    slideshowCardList,
+    mediasData,
+    mediaElement
+  ) {
+    //  console.log('handleArrowClick', direction)
+    //  console.log('handleArrowClick', this.slideshowCardList)
+    //  console.log('handleArrowClick', mediasData)
+    // console.log('handleArrowClick', mediaElement)
+    try {
+      // console.log(this.currentElement)
+    //  console.log(this.clickedIndex)
 
-    console.log(this.currentElement);
-    console.log(this.clickedIndex);fg
+      this.currentElement = (this.currentElement + direction + this.mediasData.length) % this.mediasData.length
 
-    console.log(this.currentElement);
-    console.log(this.clickedIndex);
+      this.setElementsSlideshow(
+        this.slideshowCardList[this.currentElement],
+        this.mediasData[this.currentElement]
+      )
 
-    this.setElementsSlideshow(this.slideshowCardList[this.currentElement], mediasData[this.currentElement], cloneMediaElement)
-    this.currentElement = (this.currentElement + direction + mediasData.length) % mediasData.length
-
-    console.log(this.currentElement);
-    console.log(this.clickedIndex);
-
+      console.log(this.currentElement)
+      console.log(this.clickedIndex)
+    } catch (error) {
+      console.error(
+        'Une erreur est survenue lors de la gestion du clic sur la flèche :',
+        error
+      )
+    }
   }
 
   /**
- * Handles keyboard controls for the slideshow.
- * @param {Element[]} slideshowCardList - List of media elements in the slideshow.
- * @param {Media[]} mediasData - List of media data objects.
- * @param {Element} cloneMediaElement - Cloned media element for the slideshow.
- */
-  /* async handleKeyboardControls (event, slideshowCardList, mediasData, cloneMediaElement) {
+   * Handles keyboard controls for the slideshow.
+   * @param {Element[]} slideshowCardList - List of media elements in the slideshow.
+   * @param {Media[]} mediasData - List of media data objects.
+   * @param {Element} cloneMediaElement - Cloned media element for the slideshow.
+   */
+  async handleKeyboardControls (event, mediasData, slideshowCardList) {
   //  console.log('Before Key Press - Current Element:', this.currentElement)
     console.log('Before Key Press - Media Data:', mediasData[this.currentElement])
     //   const $slideshow = this.$slideshowDOM
@@ -576,9 +735,11 @@ export class Portfolio {
         break
       case ' ':
       case 'Space':
-        if (cloneMediaElement.tagName === 'VIDEO') {
+        if (slideshowCardList.tagName === 'VIDEO') {
           event.preventDefault()
-          cloneMediaElement.paused || cloneMediaElement.ended ? cloneMediaElement.play() : cloneMediaElement.pause()
+          const video = slideshowCardList
+          console.log(video)
+          video.paused || video.ended ? video.play() : video.pause()
         }
         break
       case 'Escape':
@@ -591,12 +752,15 @@ export class Portfolio {
     $slideshow.setAttribute('tabindex', '0')
     this.setElementsSlideshow(this.slideshowCardList[this.currentElement], mediasData[this.currentElement])
   }
-*/
+
   async init () {
+    await this.handlePhotographersData()
     await this.displayHeaderData()
     await this.displayPortfolioData()
   }
 }
 
-const portfolio = new Portfolio()
+const portfolio = new Portfolio(
+
+)
 portfolio.init()
