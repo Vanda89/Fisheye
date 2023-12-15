@@ -34,6 +34,7 @@ class Media {
     this._likes = media.likes
     this._date = media.date
     this._price = media.price
+    this._isLiked = media.isLiked
   }
 
   /**

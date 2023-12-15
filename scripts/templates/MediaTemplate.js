@@ -10,7 +10,6 @@ class MediaTemplate {
     this._media = media
     this.figure = document.createElement('figure')
     this._mediaIdClass = `media-${this._media.id}`
-    this.isLiked = false
   }
 
   /**
@@ -40,7 +39,7 @@ class MediaTemplate {
 
     // Create an img or video element based on the media type
     const $mediaElement = type === 'img' ? document.createElement('img') : document.createElement('video')
-    $mediaElement.id = 'slide'
+    $mediaElement.id = 'thumbnail'
     $mediaElement.classList.add(type === 'img' ? 'img-media' : 'video-media', this._mediaIdClass)
     $mediaElement.src = src
     if (type === 'video') {
@@ -78,7 +77,7 @@ class MediaTemplate {
    * Create the DOM structure for the media card.
    * @returns {HTMLElement} Media card element.
    */
-  createMediaCardDOM (media) {
+  createMediaCardDOM () {
     const $card = document.createElement('article')
 
     this.figure.classList.add('card-content')
@@ -97,7 +96,7 @@ class MediaTemplate {
 
     const $cardLikesIcons = document.createElement('div')
     $cardLikesIcons.classList.add('card-likes-icons')
-    $cardLikesIcons.classList.toggle('liked', this.isLiked)
+    $cardLikesIcons.classList.toggle('liked', this._media.isLiked)
 
     const $emptyHeartIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
     $emptyHeartIcon.classList.add('empty-heart-icon')

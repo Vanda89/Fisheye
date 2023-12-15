@@ -5,6 +5,7 @@ const slideshow = {
     $slideshowSection.classList.add('slideshow-modal')
     $slideshowSection.setAttribute('role', 'dialog')
     $slideshowSection.setAttribute('aria-labelledby', 'slideshow')
+    $slideshowSection.setAttribute('tabindex', '0')
 
     const $figure = document.createElement('figure')
 
@@ -81,6 +82,38 @@ const slideshow = {
         $closeButton?.focus()
       }
     }
+  },
+
+  createSlideshowThumbnails () {
+    const { type, src, alt, videoType } = this._media.mediaView || {}
+    const $figure = document.querySelector('figure')
+    const $figcaption = this.figure.querySelector('figcaption')
+
+    // Create an img or video element based on the media type
+    const $slideshowElement = type === 'img' ? document.createElement('img') : document.createElement('video')
+    $slideshowElement.id = 'slide'
+    $slideshowElement.classList.add(type === 'img' ? 'img-media' : 'video-media', this._mediaIdClass)
+    $slideshowElement.src = src
+    if (type === 'video') {
+      $slideshowElement.type = videoType || 'video/mp4'
+    }
+    $slideshowElement.alt = alt
+
+    const $figureTitle = document.querySelector('h3')
+    $figureTitle.textContent = alt
+
+    $figure.insertBefore($slideshowElement, $figcaption)
+
+    // Create an object containing useful information about the media (thumbnail)
+    const slideshowThumbnailInfo = {
+      mediaId: this._mediaIdClass,
+      src,
+      alt,
+      type,
+      videoType
+    }
+
+    return slideshowThumbnailInfo
   }
 }
 

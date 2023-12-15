@@ -1,9 +1,5 @@
-import { Portfolio } from '../pages/Portfolio.js'
-const portfolio = new Portfolio()
-
 document.addEventListener('DOMContentLoaded', (event) => {
   dropdown.createDropdown()
-  dropdown.initDropdown()
 })
 
 const dropdown = {
@@ -88,64 +84,6 @@ const dropdown = {
     $dropdown.appendChild($sortMenu)
 
     return $dropdown
-  },
-
-  initDropdown (sortOption) {
-    const $sortingDropdown = document.getElementById('sortingDropdown')
-    const $popularityButton = document.getElementById('popularity')
-    const $dateButton = document.getElementById('date')
-    const $titleButton = document.getElementById('title')
-    const $dropdown = document.querySelector('.dropdown')
-
-    if ($sortingDropdown) { $sortingDropdown.textContent = sortOption }
-
-    $popularityButton?.addEventListener('click', (event) => {
-      event.stopPropagation()
-      const newSortOption = 'Popularité' // Replace with your actual sort option
-      portfolio.handleSortDropdown(newSortOption)
-      $sortingDropdown.textContent = newSortOption
-      if ($dropdown?.classList.contains('open')) {
-        this.updateButtonContent($popularityButton, $dateButton, $titleButton)
-      }
-    })
-
-    $dateButton?.addEventListener('click', (event) => {
-      event.stopPropagation()
-      const newSortOption = 'Date' // Replace with your actual sort option
-      portfolio.handleSortDropdown(newSortOption)
-      $sortingDropdown.textContent = newSortOption
-      if ($dropdown?.classList.contains('open')) {
-        this.updateButtonContent($dateButton, $popularityButton, $titleButton)
-      }
-    })
-
-    $titleButton?.addEventListener('click', (event) => {
-      event.stopPropagation()
-      const newSortOption = 'Titre' // Replace with your actual sort option
-      portfolio.handleSortDropdown(newSortOption)
-      $sortingDropdown.textContent = newSortOption
-      if ($dropdown?.classList.contains('open')) {
-        this.updateButtonContent($titleButton, $popularityButton, $dateButton)
-      }
-    })
-
-    if ($dropdown) {
-      $dropdown.addEventListener('click', (event) => {
-        event.preventDefault() // Prevent default form submission
-        event.stopPropagation() // Stop event propagation
-        $dropdown.classList.toggle('open', true)
-      })
-    }
-    document.addEventListener('DOMContentLoaded', (event) => {
-      const $dropdown = document.querySelector('.dropdown')
-
-      document.addEventListener('click', (event) => {
-        const isClickInside = $dropdown.contains(event.target)
-        if (!isClickInside && $dropdown.classList.contains('open')) {
-          $dropdown.classList.remove('open')
-        }
-      })
-    })
   },
 
   handleDropdown (isopen) {
