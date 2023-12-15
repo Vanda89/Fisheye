@@ -39,7 +39,7 @@ class MediaTemplate {
 
     // Create an img or video element based on the media type
     const $mediaElement = type === 'img' ? document.createElement('img') : document.createElement('video')
-    $mediaElement.id = 'slide'
+    $mediaElement.id = 'thumbnail'
     $mediaElement.classList.add(type === 'img' ? 'img-media' : 'video-media', this._mediaIdClass)
     $mediaElement.src = src
     if (type === 'video') {
@@ -96,6 +96,7 @@ class MediaTemplate {
 
     const $cardLikesIcons = document.createElement('div')
     $cardLikesIcons.classList.add('card-likes-icons')
+    $cardLikesIcons.classList.toggle('liked', this._media.isLiked)
 
     const $emptyHeartIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
     $emptyHeartIcon.classList.add('empty-heart-icon')

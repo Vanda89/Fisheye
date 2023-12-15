@@ -34,6 +34,7 @@ class Media {
     this._likes = media.likes
     this._date = media.date
     this._price = media.price
+    this._isLiked = media.isLiked
   }
 
   /**
@@ -78,6 +79,23 @@ class Media {
     return this._likes
   }
 
+  set likes (value) {
+    // Add validation if needed
+    this._likes = value
+  }
+
+  /**
+   * Whether the media is liked.
+   * @type {boolean}
+   */
+  get isLiked () {
+    return this._isLiked
+  }
+
+  set isLiked (value) {
+    this._isLiked = value
+  }
+
   /**
    * Date of media creation.
    * @type {string}
@@ -107,6 +125,7 @@ class MediaFactory {
   createMedia (mediaData) {
     const media = new Media(mediaData)
     media.fullPath = `window.location.origin/assets/photographers/Sample_Photos/${media.photographerId}/${media.image}`
+    media.isLiked = mediaData.isLiked // Add this line
     // console.log(media)
     return media
   }

@@ -454,11 +454,9 @@ main {
 
 
 
-.slideshow-modal {
-    display: none;
-}
 
 .slideshow-modal {
+    display: none;
     border: none;
     outline: none;
 }
