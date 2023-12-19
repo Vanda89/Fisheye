@@ -1,4 +1,4 @@
-// Importing modules
+// Importing modules Portfolio.js
 import PhotographerFactory from '../factories/PhotographerFactory.js'
 import PhotographerTemplate from '../templates/PhotographerTemplate.js'
 import MediaFactory from '../factories/MediaFactory.js'
@@ -13,9 +13,10 @@ export class Portfolio {
     this.mediaFactory = new MediaFactory('')
     this.$slideshowDOM = slideshow.createSlideshow()
     this.slideshowCardList = []
-    this.clickedIndex = this.currentElement
+    this.currentElement = this.clickedIndex
     this.leftListener = this.leftListener.bind(this)
     this.rightListener = this.rightListener.bind(this)
+    this.handleKeyboardControls = this.handleKeyboardControls.bind(this)
 
     this.photographer = null
     this.mediasData = null
@@ -92,7 +93,7 @@ export class Portfolio {
     } else if (sortOption === 'Date') {
       sortedMediasData = this.mediasData.sort((a, b) => b.date.localeCompare(a.date))
     } else if (sortOption === 'Titre') {
-      sortedMediasData = this.mediasData.sort((a, b) => b.title.localeCompare(a.title))
+      sortedMediasData = this.mediasData.sort((a, b) => a.title.localeCompare(b.title))
     }
 
     return sortedMediasData
@@ -175,62 +176,21 @@ export class Portfolio {
     const $contactFormDOM = contactForm.createContactForm()
     this.appendChildToParent(this.$mainContainer, $contactFormDOM)
 
-    const $photographerName = document.querySelector('h2.photograph-name')
+    const $photographerName = document.querySelector('h1.photograph-name')
     if ($photographerName) {
       this.setTextContent($photographerName, this.photographer._name)
     }
 
     this.$main?.insertBefore($photographerContainer, this.$mediaContainer)
 
-    this.handleContactForm(this.photographer._id)
-  }
+    contactForm.initializeContactFormModal()
 
-  async handleContactForm (photographerId) {
     const $form = document.querySelector('.contact-form')
-    const $contactButton = document.querySelector('.contact-button')
-    const $closeButton = document.querySelector('.close-button')
-    const $sendButton = document.querySelector('.send-button')
-
-    $contactButton?.addEventListener('click', () => {
-      contactForm.handleContactForm()
-      this.$mainContainer?.classList.toggle('form-filter')
-    })
-
-    $closeButton?.addEventListener('click', () => {
-      this.$mainContainer?.classList.toggle('form-filter')
-    })
-
-    const getFieldValue = (id) => $form.querySelector(`#${id}`).value
-
     if ($form) {
       $form.setAttribute(
         'action',
-        window.location.origin + '/photographer.html?id=' + photographerId
+        window.location.origin + '/photographer.html?id=' + this.photographer._id
       )
-
-      $sendButton.addEventListener('click', (event) => {
-        event.preventDefault()
-        this.$mainContainer?.classList.toggle('form-filter')
-        contactForm.handleContactForm()
-
-        const firstNameValue = getFieldValue('firstName')
-        const lastNameValue = getFieldValue('lastName')
-        const emailValue = getFieldValue('email')
-        const messageValue = getFieldValue('message')
-
-        console.log(
-          'Prénom:',
-          firstNameValue,
-          '| Nom:',
-          lastNameValue,
-          '| Email:',
-          emailValue,
-          '| Message:',
-          messageValue
-        )
-
-        $form.reset()
-      })
     }
   }
 
@@ -309,22 +269,24 @@ export class Portfolio {
   }
 
   handleClickMedia (mediaElement) {
-    mediaElement?.addEventListener('click', () => {
+    mediaElement?.addEventListener('click', (event) => {
       const elementClass = mediaElement.classList[1]
       const mediaId = parseInt(elementClass.split('-')[1])
 
       this.clickedIndex = this.findMediaById(this.sortedMedias, mediaId)
-
-      slideshow.handleSlideshow(true)
-      this.setElementsSlideshow(mediaId)
-
       this.currentElement = this.clickedIndex
 
+      console.log('this.clickedIndex', this.clickedIndex)
+      console.log('this.currentElement', this.currentElement)
+
+      slideshow.handleSlideshow(event?.currentTarget)
+      this.setElementsSlideshow(mediaId)
+
       this.handleSlideshowPosition(
-        this.slideshowCardList,
-        this.sortedMedias
+        this.slideshowCardList
       )
     })
+    /* TODO : add keyboard controls to open slideshow on keydown */
   }
 
   setElementsSlideshow (mediaId) {
@@ -335,18 +297,18 @@ export class Portfolio {
     this.removeAllChildrenFromParent($slideshowCard)
 
     const slide = this.slideshowCardList.find((slide) => slide._id === mediaId)
-
     let $slideshowElement
     if (slide._video) {
       $slideshowElement = document.createElement('video')
-      $slideshowElement.setAttribute('controls', '')
     } else {
+      console.log()
       $slideshowElement = document.createElement('img')
     }
 
     $slideshowElement.src = slide._video ? this.setMediaFullPaths(slide._video) : this.setMediaFullPaths(slide._image)
     $slideshowElement.classList = slide._video ? 'video-media' : 'img-media'
     $slideshowElement.type = slide._video ? 'video/mp4' : ''
+    $slideshowElement.controls = !!slide._video
 
     if ($slideshowCardTitle) {
       $slideshowCardTitle.textContent = slide._title
@@ -367,8 +329,7 @@ export class Portfolio {
   }
 
   handleSlideshowPosition (
-    slideshowCardList,
-    sortedMedias
+    slideshowCardList
   ) {
     const $leftArrow = this.$slideshowDOM.querySelector('.left-control')
     const $rightArrow = this.$slideshowDOM.querySelector('.right-control')
@@ -376,25 +337,16 @@ export class Portfolio {
     $leftArrow.removeEventListener('click', this.leftListener)
     $rightArrow.removeEventListener('click', this.rightListener)
 
-    this.currentElement = this.clickedIndex
     $leftArrow.addEventListener('click', this.leftListener)
     $rightArrow.addEventListener('click', this.rightListener)
 
-    document.removeEventListener('keydown', (event) => {
-      this.handleKeyboardControls(event, this.slideshowCardList[this.currentElement]._id)
-      console.log(event);
-    })
-
-    document.addEventListener('keydown', (event) => {
-      this.handleKeyboardControls(event, this.slideshowCardList[this.currentElement]._id)
-      console.log(event);
-    })
+    document.removeEventListener('keydown', this.handleKeyboardControls)
+    document.addEventListener('keydown', this.handleKeyboardControls)
 
     const closeButton = document.getElementById('close-control')
     if (closeButton) {
       closeButton.addEventListener('click', () => {
         slideshow.handleSlideshow(false)
-        this.currentElement = this.clickedIndex
       })
     }
   }
@@ -405,8 +357,6 @@ export class Portfolio {
     try {
       if (this.slideshowCardList?.length) {
         this.currentElement = (this.currentElement + direction + this.slideshowCardList.length) % this.slideshowCardList.length
-
-        console.log(this.slideshowCardList[this.currentElement])
         this.setElementsSlideshow(
           this.slideshowCardList[this.currentElement]._id
         )
@@ -419,31 +369,23 @@ export class Portfolio {
     }
   }
 
-  async handleKeyboardControls (event, currentElement) {
-    console.log('handleKeyboardControls', event)
+  async handleKeyboardControls (event) {
+    const currentElement = this.slideshowCardList[this.currentElement]
+    event.stopPropagation()
 
-    const $leftArrow = this.$slideshowDOM.querySelector('.left-control')
-    const $rightArrow = this.$slideshowDOM.querySelector('.right-control')
-    const $slideshow = this.$slideshowDOM
-    const slide = this.setElementsSlideshow(this.slideshowCardList[this.currentElement]._id)
-    console.log(slide)
     switch (event.key) {
       case 'ArrowLeft':
-
-        $leftArrow.click()
+        this.leftListener()
         break
       case 'ArrowRight':
-
-        $rightArrow.click()
+        this.rightListener()
         break
       case ' ':
       case 'Space':
-        console.log(this.slideshowCardList[this.currentElement])
-        if (slide._video !== undefined) {
+        if (currentElement._video !== undefined) {
           event.preventDefault()
           const video = this.$slideshowDOM.querySelector('video')
-          console.log(video.paused)
-          if (video.paused === true) {
+          if (video.paused || video.ended) {
             video.play()
           } else {
             video.pause()
@@ -451,11 +393,9 @@ export class Portfolio {
         }
         break
       case 'Escape':
-        slideshow.handleSlideshow(false)
+        slideshow.handleSlideshow(event.currentTarget)
         break
     }
-
-    $slideshow.setAttribute('tabindex', '0')
   }
 
   /**
@@ -552,14 +492,3 @@ export class Portfolio {
     await this.displayPortfolioData()
   }
 }
-
-const getIdFromUrl = () => {
-  const urlParams = new URLSearchParams(window.location.search)
-  const id = urlParams.get('id')
-
-  return parseInt(id) || null
-}
-
-const portfolio = new Portfolio()
-
-portfolio.init(getIdFromUrl())

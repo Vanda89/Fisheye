@@ -36,11 +36,29 @@
     pointer-events: auto;
 }
 
+/* Generic classes */
+.icon-control {
+    display: flex;
+    width: 72px;
+    height: 72px;
+    border: none;
+    background: none;
+    fill: var(--primary-color);
+
+}
+
+.contact-modal svg,
+.slideshow-modal svg {
+    width: 100%;
+    height: 100%;
+}
+
 main {
     display: flex;
     flex-direction: column;
 }
 
+/* Specific classes */
 .photographer-container {
     display: flex;
     justify-content: space-between;
@@ -112,6 +130,7 @@ main {
     flex-direction: column;
 }
 
+/* Sorting dropdown */
 .dropdown-container {
     position: absolute;
     z-index: 1;
@@ -120,8 +139,6 @@ main {
 .dropdown {
     display: flex;
     position: relative;
-
-
 }
 
 .dropdown.open #sortingDropdown {
@@ -132,12 +149,12 @@ main {
 .dropdown:not(.open) .chevron {
     transform: rotate(0deg);
     transition: transform 0.3s ease-in-out;
-  }
+}
 
-  .dropdown.open .chevron {
+.dropdown.open .chevron {
     transform: rotate(180deg);
     transition: transform 0.3s ease-in-out;
-  }
+}
 
 
 .dropdown.open #listbox {
@@ -235,6 +252,8 @@ main {
     height: 24px;
 }
 
+
+/* Cards */
 .card-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -324,7 +343,7 @@ main {
 
 
 
-
+/* Info bar */
 .info-bar-container {
     position: fixed;
     bottom: 0;
@@ -362,8 +381,7 @@ main {
 
 
 
-
-
+/* Contact modal */
 .contact-modal {
     display: none;
 }
@@ -398,16 +416,18 @@ main {
 }
 
 
-.contact-modal header h2 {
+.contact-modal header h1 {
     font-size: 64px;
     font-weight: normal;
     text-align: center;
     color: black;
     display: flex;
     padding-left: 5px;
+    margin: 0;
+
 }
 
-.contact-modal .close-button {
+.contact-modal #close-button {
     fill: white;
     padding: 0;
 }
@@ -430,31 +450,54 @@ main {
     flex-direction: column;
     width: 100%;
     align-items: self-start;
+    position: relative;
     margin-bottom: 26px;
 }
 
 .contact-modal form input {
     width: 100%;
     height: 68px;
-    border: none;
+    border: transparent 1px solid;
     border-radius: 5px;
 }
 
 .contact-modal form textarea {
     width: 100%;
     height: 170px;
-    border: none;
+    border: transparent 1px solid;
     border-radius: 5px;
 }
 
-.contact-modal input:required,
-.contact-modal textarea:required {
+.contact-modal form div span  {
+    content: attr(data-error);
+    font-size: 0.8em;
+    color: var(--primary-color);
+    display: block;
+    line-height: 0.4;
+    visibility: hidden;
+    position: absolute;
+    bottom: -13px;
+}
+
+.contact-modal div.error input,
+.contact-modal div.error textarea {
     border: var(--primary-color) 1px solid;
 }
 
+.contact-modal form div.error span {
+    visibility: visible;
+}
+
+.contact-modal form .send-button {
+    margin-top: 8px;
+    cursor: pointer;
+}
+   
 
 
 
+
+/* Slideshow modal */
 .slideshow-modal {
     display: none;
     border: none;
@@ -477,25 +520,11 @@ main {
     overflow: hidden;
 }
 
-/* Generic class */
-.icon-control {
-    display: flex;
-    width: 72px;
-    height: 72px;
-    border: none;
-    background: none;
-}
-
-.slideshow-modal svg {
-    width: 100%;
-    height: 100%;
-    fill: var(--primary-color);
-}
-
 .slideshow-modal #close-control {
     position: absolute;
     top: 62px;
     right: 0px;
+    fill: var(--primary-color);
 }
 
 .slideshow-modal figure {
