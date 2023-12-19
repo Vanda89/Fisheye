@@ -1,9 +1,10 @@
+// Importing modules App.js
 import PhotographerFactory from '../factories/PhotographerFactory.js'
 import PhotographerTemplate from '../templates/PhotographerTemplate.js'
 
-class App {
+export class App {
   constructor () {
-    this.$photographerContainer = document.querySelector(
+    this.$photographersContainer = document.querySelector(
       '.photographers-section'
     )
 
@@ -34,42 +35,31 @@ class App {
 
   async displayData () {
     const photographersData = await this.getPhotographers()
-    console.log('Photographers Data: ', photographersData)
 
     const photographerInstances = photographersData.photographers.map(
       (photographerData) =>
         this.photographerFactory.createPhotographer(photographerData)
     )
-    console.log('Photographer Instances: ', photographerInstances)
 
     photographerInstances.forEach((photographer) => {
       const photographerModel = new PhotographerTemplate(photographer)
-      console.log('Photographer Model', photographerModel)
 
       const photographerCardDOM = photographerModel.createPhotographerCardDOM()
-      console.log('photographerCardDOM', photographerCardDOM)
 
-      // Sélectionnez le lien dans le DOM
       const portfolioLink = photographerCardDOM.querySelector('.portfolio-link')
-      console.log('portfolio link', portfolioLink)
 
       portfolioLink.dataset.photographerId = photographer.id
-      // Ajoutez l'écouteur d'événements au lien existant
       portfolioLink?.addEventListener('click', (event) => {
         event.preventDefault() // Empêche le comportement par défaut du lien
 
         window.location.href = `../../photographer.html?id=${photographer.id}`// Redirige vers la page du photographe
       })
 
-      this.$photographerContainer.appendChild(photographerCardDOM)
+      this.$photographersContainer.appendChild(photographerCardDOM)
     })
   }
 
   async init () {
-    // Récupère les datas des photographes
     await this.displayData()
   }
 }
-
-const app = new App()
-app.init()
