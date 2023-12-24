@@ -14,8 +14,9 @@ export class Portfolio {
     this.$slideshowDOM = slideshow.createSlideshow()
     this.slideshowCardList = []
     this.currentElement = this.clickedIndex
-    this.leftListener = this.leftListener.bind(this)
-    this.rightListener = this.rightListener.bind(this)
+
+    this.leftListener = this.handleArrowClick.bind(this, -1)
+    this.rightListener = this.handleArrowClick.bind(this, 1)
     this.handleKeyboardControls = this.handleKeyboardControls.bind(this)
 
     this.photographer = null
@@ -111,33 +112,21 @@ export class Portfolio {
     $popularityButton?.addEventListener('click', (event) => {
       event.stopPropagation()
       this.handleSortDropdown('Popularité')
-      const newSortOption = 'Popularité'
-      $sortingDropdown.textContent = newSortOption
-      if ($dropdown?.classList.contains('open')) {
-        dropdown.updateButtonContent($popularityButton, $dateButton, $titleButton)
-      }
+      $sortingDropdown.textContent = 'Popularité'
       $dropdown.classList.remove('open')
     })
 
     $dateButton?.addEventListener('click', (event) => {
       event.stopPropagation()
       this.handleSortDropdown('Date')
-      const newSortOption = 'Date'
-      $sortingDropdown.textContent = newSortOption
-      if ($dropdown?.classList.contains('open')) {
-        dropdown.updateButtonContent($dateButton, $titleButton, $popularityButton)
-      }
+      $sortingDropdown.textContent = 'Date'
       $dropdown.classList.remove('open')
     })
 
     $titleButton?.addEventListener('click', (event) => {
       event.stopPropagation()
       this.handleSortDropdown('Titre')
-      const newSortOption = 'Titre'
-      $sortingDropdown.textContent = newSortOption
-      if ($dropdown?.classList.contains('open')) {
-        dropdown.updateButtonContent($titleButton, $popularityButton, $dateButton)
-      }
+      $sortingDropdown.textContent = 'Titre'
       $dropdown.classList.remove('open')
     })
 
@@ -146,6 +135,15 @@ export class Portfolio {
         event.preventDefault()
         event.stopPropagation()
         $dropdown.classList.toggle('open', true)
+      })
+      document.addEventListener('click', (event) => {
+        const isClickInside = $dropdown?.contains(event.target)
+
+        if (!isClickInside && $dropdown.classList.contains('open')) {
+          event.preventDefault()
+          event.stopPropagation()
+          $dropdown.classList.toggle('open', false)
+        }
       })
     }
   }
@@ -270,23 +268,47 @@ export class Portfolio {
 
   handleClickMedia (mediaElement) {
     mediaElement?.addEventListener('click', (event) => {
+      event.stopPropagation()
       const elementClass = mediaElement.classList[1]
       const mediaId = parseInt(elementClass.split('-')[1])
 
       this.clickedIndex = this.findMediaById(this.sortedMedias, mediaId)
       this.currentElement = this.clickedIndex
 
-      console.log('this.clickedIndex', this.clickedIndex)
-      console.log('this.currentElement', this.currentElement)
+      slideshow.toggleSlideshow(event?.currentTarget)
 
-      slideshow.handleSlideshow(event?.currentTarget)
+      const $modal = document.querySelector('.slideshow-modal')
+      document.addEventListener('click', (event) => {
+        const isClickInside = $modal?.contains(event.target)
+
+        if (!isClickInside && $modal.classList.contains('open')) {
+          slideshow.toggleSlideshow(event?.currentTarget)
+        }
+      })
+
       this.setElementsSlideshow(mediaId)
 
-      this.handleSlideshowPosition(
-        this.slideshowCardList
-      )
+      this.handleSlideshowPosition()
     })
-    /* TODO : add keyboard controls to open slideshow on keydown */
+    mediaElement?.addEventListener('keydown', (event) => {
+      event.stopPropagation()
+      if (event.key === 'Enter') {
+        const elementClass = mediaElement.classList[1]
+        const mediaId = parseInt(elementClass.split('-')[1])
+
+        this.clickedIndex = this.findMediaById(this.sortedMedias, mediaId)
+        this.currentElement = this.clickedIndex
+
+        console.log('this.clickedIndex', this.clickedIndex)
+        console.log('this.currentElement', this.currentElement)
+
+        slideshow.toggleSlideshow(event?.currentTarget)
+
+        this.setElementsSlideshow(mediaId)
+
+        this.handleSlideshowPosition()
+      }
+    })
   }
 
   setElementsSlideshow (mediaId) {
@@ -309,6 +331,7 @@ export class Portfolio {
     $slideshowElement.classList = slide._video ? 'video-media' : 'img-media'
     $slideshowElement.type = slide._video ? 'video/mp4' : ''
     $slideshowElement.controls = !!slide._video
+    $slideshowElement.alt = 'Vue en gros plan de : ' + slide._title
 
     if ($slideshowCardTitle) {
       $slideshowCardTitle.textContent = slide._title
@@ -320,38 +343,29 @@ export class Portfolio {
     return (slide)
   }
 
-  leftListener () {
-    this.handleArrowClick(-1)
-  }
-
-  rightListener () {
-    this.handleArrowClick(1)
-  }
-
   handleSlideshowPosition (
-    slideshowCardList
   ) {
     const $leftArrow = this.$slideshowDOM.querySelector('.left-control')
     const $rightArrow = this.$slideshowDOM.querySelector('.right-control')
-
+    // this.listener = this.handleArrowClick.bind(this, direction)
     $leftArrow.removeEventListener('click', this.leftListener)
-    $rightArrow.removeEventListener('click', this.rightListener)
-
     $leftArrow.addEventListener('click', this.leftListener)
+    $rightArrow.removeEventListener('click', this.rightListener)
     $rightArrow.addEventListener('click', this.rightListener)
 
+    // this.handleKeyboardControls = this.handleKeyboardControls.bind(this)
     document.removeEventListener('keydown', this.handleKeyboardControls)
     document.addEventListener('keydown', this.handleKeyboardControls)
 
     const closeButton = document.getElementById('close-control')
-    if (closeButton) {
-      closeButton.addEventListener('click', () => {
-        slideshow.handleSlideshow(false)
-      })
-    }
+    // this.handleCloseClick = this.handleCloseClick.bind(this)
+    closeButton.removeEventListener('click', this.handleCloseClick)
+    closeButton.addEventListener('click', this.handleCloseClick)
+    closeButton.removeEventListener('keydown', this.handleCloseKeydown)
+    closeButton.addEventListener('keydown', this.handleCloseKeydown)
   }
 
-  async handleArrowClick (
+  handleArrowClick (
     direction
   ) {
     try {
@@ -369,7 +383,7 @@ export class Portfolio {
     }
   }
 
-  async handleKeyboardControls (event) {
+  handleKeyboardControls (event) {
     const currentElement = this.slideshowCardList[this.currentElement]
     event.stopPropagation()
 
@@ -393,8 +407,20 @@ export class Portfolio {
         }
         break
       case 'Escape':
-        slideshow.handleSlideshow(event.currentTarget)
+        slideshow.toggleSlideshow(event.currentTarget)
         break
+    }
+  }
+
+  handleCloseClick = (event) => {
+    event.stopPropagation()
+    slideshow.toggleSlideshow()
+  }
+
+  handleCloseKeydown = (event) => {
+    if (event.key === 'Enter' || event.key === 'Escape') {
+      event.stopPropagation()
+      slideshow.toggleSlideshow()
     }
   }
 
@@ -464,7 +490,7 @@ export class Portfolio {
   }
 
   /**
-   * Handle the sorting dropdown selection by updating the displayed portfolio data,
+   * Handle the sorting dropdown selection by updating th e displayed portfolio data,
    * changing the sorting dropdown label, and refreshing the displayed media.
    * @param {string} sortOption - The selected sorting option ('popularity', 'date', or 'title').
    */
@@ -475,13 +501,20 @@ export class Portfolio {
 
     await this.displayPortfolioData(sortOption)
     this.slideshowCardList = this.sortedMedias
-    // console.log('handleSortDropdown this.sortedMedias', this.sortedMedias)
-    // console.log('handleSortDropdown this.slideshowCardList', this.slideshowCardList)
+
     const $sortingDropdown = document.querySelector('.sortingDropdown')
     if ($sortingDropdown) {
       this.setTextContent($sortingDropdown, sortOption)
     } else {
       console.error('Unable to find element with class sortingDropdown')
+    }
+
+    dropdown.reorderButtonsBySort(sortOption)
+    const $dropdown = document.querySelector('.dropdown')
+    if ($dropdown) {
+      $dropdown.classList.remove('open')
+    } else {
+      console.error('Unable to find element with class dropdown')
     }
   }
 

@@ -27,7 +27,7 @@ class PhotographerTemplate {
     $thumbnailContainer.classList.add('thumbnail-container')
     const $thumbnail = document.createElement('img')
     $thumbnail.src = this._photographer.portrait
-    $thumbnail.alt = ''
+    $thumbnail.alt = `Portrait de ${this._photographer.name}`
     $thumbnailContainer.appendChild($thumbnail)
     $thumbnail.setAttribute('aria-hidden', 'true')
 
@@ -44,17 +44,17 @@ class PhotographerTemplate {
     const $location = document.createElement('p')
     $location.classList.add('location')
     $location.textContent = this._photographer.location
-    $location.setAttribute('aria-label', `Location: ${this._photographer.location}`)
+    $location.setAttribute('aria-label', `Localisation: ${this._photographer.location}`)
 
     const $tagline = document.createElement('p')
     $tagline.classList.add('tagline')
     $tagline.textContent = this._photographer.tagline
-    $tagline.setAttribute('aria-label', `Tagline: ${this._photographer.tagline}`)
+    $tagline.setAttribute('aria-label', `Slogan: ${this._photographer.tagline}`)
 
     const $price = document.createElement('p')
     $price.classList.add('price')
     $price.textContent = this._photographer.price
-    $price.setAttribute('aria-label', `Price: ${this._photographer.price}`)
+    $price.setAttribute('aria-label', `Prix: ${this._photographer.price}`)
 
     // Append location, tagline, and price to the card content
     $cardContent.appendChild($location)
@@ -101,7 +101,7 @@ class PhotographerTemplate {
     const $contactButton = document.createElement('button')
     $contactButton.classList.add('contact-button')
     $contactButton.textContent = 'Contactez-moi'
-    $contactButton.setAttribute('aria-label', `Contact me ${this._photographer.name}`)
+    $contactButton.setAttribute('aria-label', `Contactez ${this._photographer.name}`)
 
     // Create elements for the photographer thumbnail
     const $photographerThumbnail = document.createElement('div')
@@ -138,10 +138,11 @@ class PhotographerTemplate {
 
     const $likesIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
     $likesIcon.classList.add('likes-icon')
-    $likesIcon.setAttribute('alt', 'Filled heart icon')
     $likesIcon.setAttribute('viewBox', '0 0 512 512')
-    $likesIcon.innerHTML = '<path d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z"/>'
-
+    $likesIcon.innerHTML = `
+      <title>Icône de coeur rempli</title>
+      <path d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z"/>
+    `
     $likesContainer.appendChild($likes)
     $likesContainer.appendChild($likesIcon)
 

@@ -44,7 +44,7 @@
     border: none;
     background: none;
     fill: var(--primary-color);
-
+    cursor: pointer;
 }
 
 .contact-modal svg,
@@ -143,26 +143,19 @@ main {
 
 .dropdown.open #sortingDropdown {
     display: none;
+    cursor: pointer;
 }
 
-
 .dropdown:not(.open) .chevron {
-    transform: rotate(0deg);
-    transition: transform 0.3s ease-in-out;
+    cursor: pointer;
 }
 
 .dropdown.open .chevron {
-    transform: rotate(180deg);
-    transition: transform 0.3s ease-in-out;
+    cursor: pointer;
 }
-
 
 .dropdown.open #listbox {
     display: flex;
-}
-
-.dropdown.open .chevron-up {
-    display: block;
 }
 
 .dropdown .sortingDropdown-trigger {
@@ -191,6 +184,8 @@ main {
     border: none;
     border-radius: 5px;
     transition: opacity 0.3s ease;
+    cursor: pointer;
+
 }
 
 .dropdown #sortingDropdown:focus {
@@ -210,8 +205,8 @@ main {
 #listbox {
     display: none;
     flex-direction: column;
-    border-radius: 5px;
-    cursor: pointer;
+    border-radius: 5px ;
+    overflow: hidden;
     position: relative;
     padding: 0;
 }
@@ -231,18 +226,15 @@ main {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    cursor: pointer;
 }
 
-#popularity {
-    border-radius: 5px;
-
-}
-
-#title {
-    border-radius: 0 0 5px 5px;
+.sort-entry:last-child {
     border-bottom: none;
-
 }
+
+
+
 
 .chevron-up {
     position: absolute;
@@ -277,18 +269,13 @@ main {
 
 }
 
-.card-container img {
-    width: 350px;
-    height: 300px;
-    border-radius: 5px;
-    object-fit: cover;
-}
-
+.card-container img,
 .card-container video {
     width: 350px;
     height: 300px;
     border-radius: 5px;
     object-fit: cover;
+    cursor: pointer;
 }
 
 .card-container figcaption {
@@ -316,6 +303,7 @@ main {
     position: relative;
     width: 24px;
     height: 24px;
+    cursor: pointer;
 }
 
 .card-container .card-likes-icons>* {
@@ -430,6 +418,7 @@ main {
 .contact-modal #close-button {
     fill: white;
     padding: 0;
+    cursor: pointer;
 }
 
 .contact-modal form {
@@ -504,7 +493,7 @@ main {
     outline: none;
 }
 
-.slideshow-modal.isopening {
+.slideshow-modal.isOpen {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -520,13 +509,6 @@ main {
     overflow: hidden;
 }
 
-.slideshow-modal #close-control {
-    position: absolute;
-    top: 62px;
-    right: 0px;
-    fill: var(--primary-color);
-}
-
 .slideshow-modal figure {
     display: flex;
     flex-direction: column;
@@ -536,9 +518,7 @@ main {
     margin: 0;
     /** 100% - size of the two icons - left and right gap */
     width: calc(100% - 72px - 72px - 12px - 12px);
-
 }
-
 
 .slideshow-modal figure>*:not(figcaption) {
     height: calc(100% - 62px - 62px);
@@ -546,7 +526,7 @@ main {
     width: 1050px;
     margin: 62px 0;
     align-self: center;
-
+    
 }
 
 .slideshow-modal figcaption {
@@ -555,4 +535,12 @@ main {
     display: flex;
     color: var(--primary-color);
     font-size: 24px;
+}
+
+.slideshow-modal #close-control {
+    position: absolute;
+    top: 62px;
+    right: 0px;
+    fill: var(--primary-color);
+    cursor: pointer;
 }

@@ -24,7 +24,7 @@ const contactForm = {
     $closeButton.id = 'close-button'
     $closeButton.classList.add('icon-control')
     $closeButton.setAttribute('aria-labelledby', 'close-button close-button-icon')
-    $closeButton.setAttribute('aria-label', 'Close Contact form')
+    $closeButton.setAttribute('aria-label', 'Fermer le formulaire de contact')
 
     const $closeIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
     $closeIcon.classList.add('close-button-icon')
@@ -49,7 +49,7 @@ const contactForm = {
     $firstNameInput.type = 'text'
     $firstNameInput.setAttribute('autocomplete', 'given-name')
     $firstNameInput.setAttribute('required', 'required')
-    $firstNameInput.setAttribute('aria-label', 'First Name')
+    $firstNameInput.setAttribute('aria-label', 'Prénom')
     $firstNameInput.setAttribute('aria-required', 'true')
     const $firstNameError = document.createElement('span')
     $firstNameError.id = 'firstName-error'
@@ -67,9 +67,8 @@ const contactForm = {
     $lastNameInput.type = 'text'
     $lastNameInput.setAttribute('autocomplete', 'family-name')
     $lastNameInput.setAttribute('required', 'required')
-    $lastNameInput.setAttribute('aria-label', 'Last Name')
+    $lastNameInput.setAttribute('aria-label', 'Nom')
     $lastNameInput.setAttribute('aria-required', 'true')
-
     const $lastNameError = document.createElement('span')
     $lastNameError.id = 'lastName-error'
     $lastNameError.classList.add('error-message')
@@ -103,7 +102,7 @@ const contactForm = {
     $messageTextarea.id = 'message'
     $messageTextarea.setAttribute('autocomplete', 'on')
     $messageTextarea.setAttribute('required', 'required')
-    $messageTextarea.setAttribute('aria-label', 'Your message')
+    $messageTextarea.setAttribute('aria-label', 'Votre message')
     $messageTextarea.setAttribute('aria-required', 'true')
     const $messageError = document.createElement('span')
     $messageError.id = 'message-error'
@@ -115,7 +114,7 @@ const contactForm = {
     const $sendButton = document.createElement('button')
     $sendButton.classList.add('contact-button', 'send-button')
     $sendButton.textContent = 'Envoyer'
-    $sendButton.setAttribute('aria-label', 'Send')
+    $sendButton.setAttribute('aria-label', 'Envoyer')
 
     $form.appendChild($firstNameDiv)
     $form.appendChild($lastNameDiv)
@@ -135,20 +134,36 @@ const contactForm = {
     const $closeButton = document.getElementById('close-button')
     const $sendButton = document.querySelector('.send-button')
 
-    $contactButton.addEventListener('click', (event) => this.toggleContactForm())
+    document.addEventListener('click', (event) => {
+      const isClickInside = $modal?.contains(event.target)
+
+      if (!isClickInside && $modal.classList.contains('open')) {
+        this.toggleContactForm()
+        $form.reset()
+        this.clearErrors()
+      }
+    })
+
+    $contactButton.addEventListener('click', (event) => {
+      event.stopPropagation()
+      this.toggleContactForm()
+    })
     $contactButton.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
+        event.stopPropagation()
         this.toggleContactForm()
       }
     })
 
     $closeButton.addEventListener('click', (event) => {
+      event.stopPropagation()
       this.toggleContactForm()
       $form.reset()
       this.clearErrors()
     })
     $closeButton.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === 'Escape') {
+        event.stopPropagation()
         this.toggleContactForm()
         $form.reset()
         this.clearErrors()
@@ -160,20 +175,24 @@ const contactForm = {
       if (!this.validateContactForm()) {
         return
       }
+      event.stopPropagation()
       this.toggleContactForm()
       $form.reset()
     })
     $sendButton.addEventListener('keydown', (event) => {
-      event.preventDefault()
-      if (!this.validateContactForm()) {
-        return
+      if (event.key === 'Enter') {
+        event.preventDefault()
+        if (!this.validateContactForm()) {
+          return
+        }
+        event.stopPropagation()
+        this.toggleContactForm()
+        $form.reset()
       }
-      this.toggleContactForm()
-      $form.reset()
     })
   },
 
-  toggleContactForm (triggerElement) {
+  toggleContactForm () {
     const $mainContainer = document.querySelector('.main-container')
     const $modal = document.querySelector('.contact-modal')
     const isOpen = $modal.classList.toggle('open')
@@ -185,7 +204,7 @@ const contactForm = {
       $modal.toggleAttribute('aria-hidden', !isOpen)
       $modal.toggleAttribute('aria-modal', isOpen)
       $modal.setAttribute('tabindex', '0')
-      $modal.classList.toggle('isopening', isOpen)
+      $modal.classList.toggle('isOpen', isOpen)
 
       if (isOpen) {
         this.lastFocusedElement = document.activeElement

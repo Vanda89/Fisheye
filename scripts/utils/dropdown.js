@@ -66,14 +66,14 @@ const dropdown = {
     $option3.textContent = 'Titre'
 
     const $chevronUp = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    $chevronUp.classList.add('chevron-up')
+    $chevronUp.classList.add('chevron')
     $chevronUp.setAttribute('aria-label', 'Menu déroulant ouvert')
     $chevronUp.setAttribute('viewBox', '0 0 512 512')
     $chevronUp.setAttribute('fill', 'white')
     $chevronUp.innerHTML = '<path d="M233.4 105.4c12.5-12.5 32.8-12.5 45.3 0l192 192c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L256 173.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l192-192z"/>'
 
-    $sortMenu.appendChild($chevronUp)
     $sortMenu.appendChild($option1)
+    $sortMenu.appendChild($chevronUp)
     $sortMenu.appendChild($option2)
     $sortMenu.appendChild($option3)
 
@@ -86,34 +86,35 @@ const dropdown = {
     return $dropdown
   },
 
-  handleDropdown (isopen) {
+  toggleDropdown (isOpen) {
     const $dropdown = document.querySelector('.dropdown')
-    console.log($dropdown)
-
-    $dropdown.classList.toggle('open', isopen)
-    console.log('cool')
+    $dropdown.classList.toggle('open', isOpen)
   },
 
-  updateSortingButton (sortOption) {
-    const $optionList = document.querySelectorAll('.sort-entry')
-    const $sortingDropdown = document.getElementById('sortingDropdown')
-    console.log($optionList)
-    console.log($sortingDropdown)
-    console.log(sortOption)
-    $optionList.forEach((option) => {
-      option.addEventListener('click', () => {
-        const selectedValue = option.getAttribute('data-id')
-        console.log('Selected Value:', selectedValue)
-      })
-    })
-  },
+  reorderButtonsBySort (sortOption) {
+    const $sortMenu = document.getElementById('listbox')
+    const $popularityButton = document.getElementById('popularity')
+    const $dateButton = document.getElementById('date')
+    const $titleButton = document.getElementById('title')
 
-  updateButtonContent (firstButton, secondButton, thirdButton) {
-    firstButton.textContent = 'Popularite' // Replace with your actual text
-    secondButton.textContent = 'Date' // Replace with your actual text
-    thirdButton.textContent = 'Titre' // Replace with your actual text
+    switch (sortOption) {
+      case 'Popularité':
+        $sortMenu.appendChild($dateButton)
+        $sortMenu.appendChild($titleButton)
+        break
+      case 'Date':
+        $sortMenu.appendChild($titleButton)
+        $sortMenu.appendChild($popularityButton)
+        break
+      case 'Titre':
+        $sortMenu.appendChild($popularityButton)
+        $sortMenu.appendChild($dateButton)
+        break
+      default:
+        console.error(`Unknown sort option: ${sortOption}`)
+        break
+    }
   }
-
 }
 
 export default dropdown
