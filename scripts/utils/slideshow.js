@@ -10,8 +10,11 @@ const slideshow = {
 
     const $figcaption = document.createElement('figcaption')
 
-    const $figureTitle = document.createElement('h3')
+    const $figureTitle = document.createElement('h1')
     $figureTitle.id = 'slideshowTitle'
+    $figureTitle.classList.add('slideshow-title')
+    $figureTitle.textContent = 'Titre de l\'image'
+    $figureTitle.setAttribute('aria-live', 'polite')
 
     const $leftControl = document.createElement('button')
     $leftControl.classList.add('icon-control', 'left-control')
@@ -65,38 +68,70 @@ const slideshow = {
     return $slideshowSection
   },
 
-  toggleSlideshow () {
+  getModalElements () {
     const $mainContainer = document.querySelector('.main-container')
     const $modal = document.querySelector('.slideshow-modal')
-    const isOpen = $modal.classList.toggle('open')
 
-    if ($modal) {
-      $mainContainer?.toggleAttribute('aria-hidden', isOpen)
-      $mainContainer?.classList.toggle('slideshow-filter', isOpen)
+    return { $mainContainer, $modal }
+  },
 
-      $modal.toggleAttribute('aria-hidden', !isOpen)
-      $modal.toggleAttribute('aria-modal', isOpen)
+  toggleAttributes ($mainContainer, $modal, isOpen) {
+    $mainContainer?.toggleAttribute('aria-hidden', isOpen)
+    $mainContainer?.classList.toggle('slideshow-filter', isOpen)
+
+    $modal.toggleAttribute('aria-hidden', !isOpen)
+    $modal.toggleAttribute('aria-modal', isOpen)
+    if (isOpen) {
       $modal.setAttribute('tabindex', '0')
-      $modal.classList.toggle('isOpen', isOpen)
+    } else {
+      $modal.setAttribute('tabindex', '-1')
+    }
+    $modal.classList.toggle('open', isOpen)
+  },
 
-      if (isOpen) {
-        this.lastFocusedElement = document.activeElement
-        $modal.focus()
+  openSlideshow (event) {
+    const { $mainContainer, $modal } = this.getModalElements()
 
-        const focusableElements = 'button'
-        const focusableElementsInModal = Array.from($modal.querySelectorAll(focusableElements))
-        const firstFocusableElement = focusableElementsInModal[0]
-        const lastFocusableElement = focusableElementsInModal[focusableElementsInModal.length - 1]
-        const handleKeydown = (event) => {
-          this.handleTrapFocus(event, firstFocusableElement, lastFocusableElement)
-        }
-        $modal.removeEventListener('keydown', handleKeydown)
-        $modal.addEventListener('keydown', handleKeydown)
-      } else if (this.lastFocusedElement) {
-        this.lastFocusedElement.focus()
-        this.lastFocusedElement = null
+    this.toggleAttributes($mainContainer, $modal, true)
+
+    this.lastFocusedElement = document.activeElement
+    $modal.focus()
+
+    const focusableElements = 'button'
+    const focusableElementsInModal = Array.from($modal.querySelectorAll(focusableElements))
+    const firstFocusableElement = focusableElementsInModal[0]
+    const lastFocusableElement = focusableElementsInModal[focusableElementsInModal.length - 1]
+
+    this.handleKeydown = (event) => {
+      this.handleTrapFocus(event, firstFocusableElement, lastFocusableElement)
+    }
+    $modal.addEventListener('keydown', this.handleKeydown)
+
+    this.handleDocumentClick = (event) => {
+      const isClickInside = $modal?.contains(event.target)
+      if (!isClickInside) {
+        this.closeSlideshow()
+        document.removeEventListener('click', this.handleDocumentClick)
       }
     }
+
+    if (!this.hasDocumentClickListener) {
+      document.addEventListener('click', this.handleDocumentClick)
+      this.hasDocumentClickListener = true
+    }
+  },
+
+  closeSlideshow () {
+    const { $mainContainer, $modal } = this.getModalElements()
+
+    this.toggleAttributes($mainContainer, $modal, false)
+
+    if (this.lastFocusedElement) {
+      this.lastFocusedElement.focus()
+      this.lastFocusedElement = null
+    }
+
+    $modal.removeEventListener('keydown', this.handleKeydown)
   },
 
   handleTrapFocus (event, firstFocusableElement, lastFocusableElement) {
@@ -117,40 +152,6 @@ const slideshow = {
         event.preventDefault()
       }
     }
-  },
-
-  createSlideshowThumbnails () {
-    const { type, src, alt, videoType } = this._media.mediaView || {}
-    const $figure = document.querySelector('figure')
-    const $figcaption = this.figure.querySelector('figcaption')
-
-    // Create an img or video element based on the media type
-    const $slideshowElement = type === 'img' ? document.createElement('img') : document.createElement('video')
-    $slideshowElement.id = 'slide'
-    $slideshowElement.classList.add(type === 'img' ? 'img-media' : 'video-media', this._mediaIdClass)
-    $slideshowElement.src = src
-    if (type === 'video') {
-      $slideshowElement.type = videoType || 'video/mp4'
-      $slideshowElement.controls = true
-    }
-    $slideshowElement.alt = 'Vue aggrandie du média : ' + alt
-
-    const $figureTitle = document.querySelector('h3')
-    $figureTitle.textContent = alt
-
-    $figure.insertBefore($slideshowElement, $figcaption)
-
-    // Create an object containing useful information about the media (thumbnail)
-    const slideshowThumbnailInfo = {
-      mediaId: this._mediaIdClass,
-      src,
-      alt,
-      type,
-      controls: true,
-      videoType
-    }
-
-    return slideshowThumbnailInfo
   }
 }
 

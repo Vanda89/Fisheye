@@ -100,52 +100,37 @@ export class Portfolio {
     return sortedMediasData
   }
 
-  handleClickOption (sortOption) {
+  handleChoiceOption (sortOption) {
     const $sortingDropdown = document.getElementById('sortingDropdown')
-    const $popularityButton = document.getElementById('popularity')
+    const $popularityButton = document.getElementById('popularité')
     const $dateButton = document.getElementById('date')
-    const $titleButton = document.getElementById('title')
+    const $titleButton = document.getElementById('titre')
     const $dropdown = document.querySelector('.dropdown')
 
     if ($sortingDropdown) { $sortingDropdown.textContent = sortOption }
 
-    $popularityButton?.addEventListener('click', (event) => {
-      event.stopPropagation()
-      this.handleSortDropdown('Popularité')
-      $sortingDropdown.textContent = 'Popularité'
-      $dropdown.classList.remove('open')
-    })
-
-    $dateButton?.addEventListener('click', (event) => {
-      event.stopPropagation()
-      this.handleSortDropdown('Date')
-      $sortingDropdown.textContent = 'Date'
-      $dropdown.classList.remove('open')
-    })
-
-    $titleButton?.addEventListener('click', (event) => {
-      event.stopPropagation()
-      this.handleSortDropdown('Titre')
-      $sortingDropdown.textContent = 'Titre'
-      $dropdown.classList.remove('open')
-    })
-
-    if ($dropdown) {
-      $dropdown.addEventListener('click', (event) => {
-        event.preventDefault()
+    const addListenerToOptionButton = (button, option) => {
+      button?.addEventListener('click', (event) => {
         event.stopPropagation()
-        $dropdown.classList.toggle('open', true)
+        this.handleSortDropdown(option)
+        $sortingDropdown.textContent = option
+        $dropdown.classList.remove('open')
       })
-      document.addEventListener('click', (event) => {
-        const isClickInside = $dropdown?.contains(event.target)
 
-        if (!isClickInside && $dropdown.classList.contains('open')) {
+      button?.addEventListener('keydown', (event) => {
+        event.stopPropagation()
+        if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault()
-          event.stopPropagation()
-          $dropdown.classList.toggle('open', false)
+          this.handleSortDropdown(option)
+          $sortingDropdown.textContent = option
+          $dropdown.classList.remove('open')
         }
       })
     }
+
+    addListenerToOptionButton($popularityButton, 'Popularité')
+    addListenerToOptionButton($dateButton, 'Date')
+    addListenerToOptionButton($titleButton, 'Titre')
   }
 
   appendChildToParent (parent, child) {
@@ -164,6 +149,21 @@ export class Portfolio {
 
   setTextContent (element, text) {
     element.textContent = text
+  }
+
+  setMediaFullPaths (src) {
+    const photographerFirstName = this.photographer._name
+      .split(' ')[0]
+      .replace(/-/g, ' ')
+
+    const mediaFullPath =
+    window.location.origin +
+    '/assets/photographers/Sample_Photos/' +
+    photographerFirstName +
+    '/' +
+    src
+
+    return mediaFullPath
   }
 
   async displayHeaderData () {
@@ -192,21 +192,6 @@ export class Portfolio {
     }
   }
 
-  setMediaFullPaths (src) {
-    const photographerFirstName = this.photographer._name
-      .split(' ')[0]
-      .replace(/-/g, ' ')
-
-    const mediaFullPath =
-    window.location.origin +
-    '/assets/photographers/Sample_Photos/' +
-    photographerFirstName +
-    '/' +
-    src
-
-    return mediaFullPath
-  }
-
   async displayPortfolioData (sortOption = 'Popularité') {
     const dropdownData = dropdown.createDropdown()
     this.sortedMedias = this.sortMediasByOption(sortOption)
@@ -214,7 +199,19 @@ export class Portfolio {
 
     this.appendChildToParent(this.$dropdownContainer, dropdownData)
 
-    this.handleClickOption(sortOption)
+    this.handleChoiceOption(sortOption)
+
+    const $sortingDropdown = document.querySelector('.sortingDropdown')
+
+    $sortingDropdown.addEventListener('click', () => {
+      dropdown.toggleDropdown(true)
+    })
+
+    $sortingDropdown.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        dropdown.toggleDropdown(true)
+      }
+    })
 
     const $slideshowDOM = document.querySelector('.slideshow-modal')
     if (!$slideshowDOM) {
@@ -241,10 +238,15 @@ export class Portfolio {
           const $likesElement =
           $figureMediaCard.querySelector('.card-likes-number')
 
-          this.mapMediaList(mediaThumbnail.type, mediaThumbnail.mediaId, mediaThumbnail.src)
-          this.handleLikesClick($cardLikesIcon, $likesElement, this.sortedMedias, mediaCardId, (updatedMediasDataClone, isLiked) => {
+          this.handleMedia(mediaThumbnail.type, mediaThumbnail.mediaId, mediaThumbnail.src)
+
+          this.handleLikes($cardLikesIcon, $likesElement, this.sortedMedias, mediaCardId, (updatedMediasDataClone, isLiked) => {
             this.sortedMedias = updatedMediasDataClone
-          })
+          }, 'click')
+
+          this.handleLikes($cardLikesIcon, $likesElement, this.sortedMedias, mediaCardId, (updatedMediasDataClone, isLiked) => {
+            this.sortedMedias = updatedMediasDataClone
+          }, 'keydown')
         }
       })
     }
@@ -254,67 +256,45 @@ export class Portfolio {
     this.setTotalLikes()
   }
 
-  mapMediaList (type, mediaId, src) {
+  handleMedia (type, mediaId, src) {
     const mediaSelector = `.${type}-media.${mediaId}`
     const $mediaList = document.querySelectorAll(mediaSelector)
 
     $mediaList.forEach((mediaElement) => {
       mediaElement.src = this.setMediaFullPaths(src)
-      mediaElement.setAttribute('aria-label', 'image closeup view')
-      mediaElement.focus()
-      this.handleClickMedia(mediaElement)
-    })
-  }
+      mediaElement.alt = 'Media du photographe ' + this.photographer._name + ' nommé ' + mediaElement.alt
+      mediaElement.setAttribute('aria-label', 'Vignette du média ' + mediaElement.alt + '. Cliquez pour ouvrir la vue aggrandie dans le diaporama.')
+      mediaElement.setAttribute('tabindex', '0')
 
-  handleClickMedia (mediaElement) {
-    mediaElement?.addEventListener('click', (event) => {
-      event.stopPropagation()
-      const elementClass = mediaElement.classList[1]
-      const mediaId = parseInt(elementClass.split('-')[1])
-
-      this.clickedIndex = this.findMediaById(this.sortedMedias, mediaId)
-      this.currentElement = this.clickedIndex
-
-      slideshow.toggleSlideshow(event?.currentTarget)
-
-      const $modal = document.querySelector('.slideshow-modal')
-      document.addEventListener('click', (event) => {
-        const isClickInside = $modal?.contains(event.target)
-
-        if (!isClickInside && $modal.classList.contains('open')) {
-          slideshow.toggleSlideshow(event?.currentTarget)
-        }
-      })
-
-      this.setElementsSlideshow(mediaId)
-
-      this.handleSlideshowPosition()
-    })
-    mediaElement?.addEventListener('keydown', (event) => {
-      event.stopPropagation()
-      if (event.key === 'Enter') {
+      const handleClickMedia = (event) => {
+        event.stopPropagation()
         const elementClass = mediaElement.classList[1]
         const mediaId = parseInt(elementClass.split('-')[1])
 
         this.clickedIndex = this.findMediaById(this.sortedMedias, mediaId)
         this.currentElement = this.clickedIndex
 
-        console.log('this.clickedIndex', this.clickedIndex)
-        console.log('this.currentElement', this.currentElement)
-
-        slideshow.toggleSlideshow(event?.currentTarget)
+        slideshow.openSlideshow()
+        dropdown.toggleDropdown(false)
 
         this.setElementsSlideshow(mediaId)
 
         this.handleSlideshowPosition()
       }
+
+      mediaElement.addEventListener('click', handleClickMedia)
+      mediaElement.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          handleClickMedia(event)
+        }
+      })
     })
   }
 
   setElementsSlideshow (mediaId) {
     const $slideshowCard = this.$slideshowDOM.querySelector('figure')
     const $slideshowCardLegend = this.$slideshowDOM.querySelector('figcaption')
-    const $slideshowCardTitle = this.$slideshowDOM.querySelector('h3')
+    const $slideshowCardTitle = this.$slideshowDOM.querySelector('.slideshow-title')
 
     this.removeAllChildrenFromParent($slideshowCard)
 
@@ -331,7 +311,7 @@ export class Portfolio {
     $slideshowElement.classList = slide._video ? 'video-media' : 'img-media'
     $slideshowElement.type = slide._video ? 'video/mp4' : ''
     $slideshowElement.controls = !!slide._video
-    $slideshowElement.alt = 'Vue en gros plan de : ' + slide._title
+    $slideshowElement.alt = 'Vue aggrandie du média : ' + slide._title
 
     if ($slideshowCardTitle) {
       $slideshowCardTitle.textContent = slide._title
@@ -383,6 +363,18 @@ export class Portfolio {
     }
   }
 
+  handleCloseClick = (event) => {
+    event.stopPropagation()
+    slideshow.closeSlideshow()
+  }
+
+  handleCloseKeydown = (event) => {
+    if (event.key === 'Enter' || event.key === 'Escape') {
+      event.stopPropagation()
+      slideshow.closeSlideshow()
+    }
+  }
+
   handleKeyboardControls (event) {
     const currentElement = this.slideshowCardList[this.currentElement]
     event.stopPropagation()
@@ -407,20 +399,8 @@ export class Portfolio {
         }
         break
       case 'Escape':
-        slideshow.toggleSlideshow(event.currentTarget)
+        slideshow.closeSlideshow()
         break
-    }
-  }
-
-  handleCloseClick = (event) => {
-    event.stopPropagation()
-    slideshow.toggleSlideshow()
-  }
-
-  handleCloseKeydown = (event) => {
-    if (event.key === 'Enter' || event.key === 'Escape') {
-      event.stopPropagation()
-      slideshow.toggleSlideshow()
     }
   }
 
@@ -430,36 +410,36 @@ export class Portfolio {
    * @param {Element} $likesElement - The element displaying the likes count.
    * @returns {boolean} - The updated like status (true if liked, false otherwise).
    */
-  handleLikesClick (
+  handleLikes (
     $cardLikesIcon,
     $likesElement,
     sortedMedias,
     mediaCardId,
-    callback
+    callback,
+    eventType
   ) {
-    // console.log('Inside handleLikesClick before like click', mediasData)
-    $cardLikesIcon.addEventListener('click', () => {
+    $cardLikesIcon.addEventListener(eventType, (event) => {
+      if (eventType === 'keydown' && event.key !== 'Enter') {
+        return
+      }
+
       let isLiked = $cardLikesIcon.classList.contains('liked')
       try {
-        // Toggle the 'liked' state and toggle the 'liked' class on the icon, depending on whether the card is liked.
         isLiked = !isLiked
         $cardLikesIcon.classList.toggle('liked', isLiked)
 
-        // Update the likes count
         let currentLikes = parseInt(this.getTextContent($likesElement))
         currentLikes = isLiked ? currentLikes + 1 : currentLikes - 1
         this.setTextContent($likesElement, currentLikes.toString())
 
-        this.setTotalLikes() // Update total likes in the info bar
+        this.setTotalLikes()
 
-        // Find the index of the media with the matching mediaCardId in mediasData
         const mediaIndex = this.findMediaById(
           sortedMedias,
           parseInt(mediaCardId.split('-')[1])
         )
 
         if (mediaIndex !== -1) {
-          // Update the media data
           sortedMedias[mediaIndex]._isLiked = isLiked
           sortedMedias[mediaIndex]._likes = currentLikes
         }
@@ -503,6 +483,8 @@ export class Portfolio {
     this.slideshowCardList = this.sortedMedias
 
     const $sortingDropdown = document.querySelector('.sortingDropdown')
+    const $sortMenu = document.getElementById('listbox')
+
     if ($sortingDropdown) {
       this.setTextContent($sortingDropdown, sortOption)
     } else {
@@ -512,7 +494,10 @@ export class Portfolio {
     dropdown.reorderButtonsBySort(sortOption)
     const $dropdown = document.querySelector('.dropdown')
     if ($dropdown) {
-      $dropdown.classList.remove('open')
+      if ($sortMenu) {
+        $sortMenu.setAttribute('aria-activedescendant', sortOption.toLowerCase())
+      }
+      dropdown.toggleDropdown(false)
     } else {
       console.error('Unable to find element with class dropdown')
     }

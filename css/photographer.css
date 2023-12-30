@@ -89,7 +89,7 @@ main {
 }
 
 .photograph-tagline {
-    color: var(--grey-3);
+    color: var(--grey-2);
     font-size: 18px;
 }
 
@@ -493,7 +493,7 @@ main {
     outline: none;
 }
 
-.slideshow-modal.isOpen {
+.slideshow-modal.open {
     display: flex;
     align-items: center;
     justify-content: space-between;

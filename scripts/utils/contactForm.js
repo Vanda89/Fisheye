@@ -4,27 +4,27 @@ const contactForm = {
     const $contactModalSection = document.createElement('section')
     $contactModalSection.classList.add('contact-modal')
     $contactModalSection.setAttribute('role', 'dialog')
-    $contactModalSection.setAttribute('aria-labelledby', 'modal-header')
+    $contactModalSection.setAttribute('aria-labelledby', 'contact-title')
 
     const $header = document.createElement('header')
 
-    const $titleDiv = document.createElement('div')
-    $titleDiv.classList.add('modal-header')
+    const $titlesDiv = document.createElement('div')
+    $titlesDiv.classList.add('header-titles')
 
     const $h1 = document.createElement('h1')
+    $h1.id = 'contact-title'
     $h1.textContent = 'Contactez-moi'
 
     const $photographerName = document.createElement('h1')
     $photographerName.classList.add('photograph-name')
 
-    $titleDiv.appendChild($h1)
-    $titleDiv.appendChild($photographerName)
+    $titlesDiv.appendChild($h1)
+    $titlesDiv.appendChild($photographerName)
 
     const $closeButton = document.createElement('button')
     $closeButton.id = 'close-button'
     $closeButton.classList.add('icon-control')
-    $closeButton.setAttribute('aria-labelledby', 'close-button close-button-icon')
-    $closeButton.setAttribute('aria-label', 'Fermer le formulaire de contact')
+    $closeButton.setAttribute('aria-label', 'Ferme le formulaire de contact')
 
     const $closeIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
     $closeIcon.classList.add('close-button-icon')
@@ -33,7 +33,7 @@ const contactForm = {
     $closeIcon.innerHTML = '<path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/>'
 
     $closeButton.appendChild($closeIcon)
-    $header.appendChild($titleDiv)
+    $header.appendChild($titlesDiv)
     $header.appendChild($closeButton)
 
     const $form = document.createElement('form')
@@ -114,7 +114,7 @@ const contactForm = {
     const $sendButton = document.createElement('button')
     $sendButton.classList.add('contact-button', 'send-button')
     $sendButton.textContent = 'Envoyer'
-    $sendButton.setAttribute('aria-label', 'Envoyer')
+    $sendButton.setAttribute('aria-label', 'Envoie le formulaire de contact')
 
     $form.appendChild($firstNameDiv)
     $form.appendChild($lastNameDiv)
@@ -127,100 +127,119 @@ const contactForm = {
     return $contactModalSection
   },
 
-  initializeContactFormModal () {
+  getModalElements () {
+    const $mainContainer = document.querySelector('.main-container')
     const $modal = document.querySelector('.contact-modal')
     const $form = document.querySelector('.contact-form')
+
+    return { $mainContainer, $modal, $form }
+  },
+
+  initializeContactFormModal () {
+    const { $form } = this.getModalElements()
     const $contactButton = document.querySelector('.contact-button')
     const $closeButton = document.getElementById('close-button')
     const $sendButton = document.querySelector('.send-button')
 
-    document.addEventListener('click', (event) => {
-      const isClickInside = $modal?.contains(event.target)
-
-      if (!isClickInside && $modal.classList.contains('open')) {
-        this.toggleContactForm()
-        $form.reset()
-        this.clearErrors()
-      }
-    })
-
-    $contactButton.addEventListener('click', (event) => {
+    const handleContactButton = (event) => {
       event.stopPropagation()
-      this.toggleContactForm()
-    })
+      this.openContactForm()
+    }
+
+    $contactButton.addEventListener('click', handleContactButton)
     $contactButton.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
-        event.stopPropagation()
-        this.toggleContactForm()
+        handleContactButton(event)
       }
     })
 
-    $closeButton.addEventListener('click', (event) => {
+    const handleCloseButton = (event) => {
       event.stopPropagation()
-      this.toggleContactForm()
+      this.closeContactForm()
       $form.reset()
       this.clearErrors()
-    })
+    }
+
+    $closeButton.addEventListener('click', handleCloseButton)
     $closeButton.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === 'Escape') {
-        event.stopPropagation()
-        this.toggleContactForm()
-        $form.reset()
-        this.clearErrors()
+        handleCloseButton(event)
       }
     })
 
-    $sendButton.addEventListener('click', (event) => {
-      event.preventDefault()
-      if (!this.validateContactForm()) {
-        return
-      }
+    const handleSendButton = (event) => {
       event.stopPropagation()
-      this.toggleContactForm()
-      $form.reset()
-    })
+      event.preventDefault()
+      if (this.validateContactForm()) {
+        this.closeContactForm()
+        $form.reset()
+      }
+    }
+
+    $sendButton.addEventListener('click', handleSendButton)
     $sendButton.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
-        event.preventDefault()
-        if (!this.validateContactForm()) {
-          return
-        }
-        event.stopPropagation()
-        this.toggleContactForm()
-        $form.reset()
+        handleSendButton(event)
       }
     })
   },
 
-  toggleContactForm () {
-    const $mainContainer = document.querySelector('.main-container')
-    const $modal = document.querySelector('.contact-modal')
-    const isOpen = $modal.classList.toggle('open')
+  toggleAttributes ($mainContainer, $modal, isOpen) {
+    $mainContainer?.toggleAttribute('aria-hidden', isOpen)
+    $mainContainer?.classList.toggle('form-filter', isOpen)
 
-    if ($modal) {
-      $mainContainer?.toggleAttribute('aria-hidden', isOpen)
-      $mainContainer?.classList.toggle('form-filter', isOpen)
-
-      $modal.toggleAttribute('aria-hidden', !isOpen)
-      $modal.toggleAttribute('aria-modal', isOpen)
+    $modal.toggleAttribute('aria-hidden', !isOpen)
+    $modal.toggleAttribute('aria-modal', isOpen)
+    if (isOpen) {
       $modal.setAttribute('tabindex', '0')
-      $modal.classList.toggle('isOpen', isOpen)
+    } else {
+      $modal.setAttribute('tabindex', '-1')
+    }
+    $modal.classList.toggle('open', isOpen)
+  },
 
-      if (isOpen) {
-        this.lastFocusedElement = document.activeElement
-        $modal.focus()
+  openContactForm () {
+    const { $mainContainer, $modal, $form } = this.getModalElements()
 
-        const focusableElements = 'button, input, textarea, [tabindex]:not([tabindex="-1"])'
-        const focusableElementsInModal = Array.from($modal.querySelectorAll(focusableElements))
-        const firstFocusableElement = focusableElementsInModal[0]
-        const lastFocusableElement = focusableElementsInModal[focusableElementsInModal.length - 1]
+    this.toggleAttributes($mainContainer, $modal, true)
 
-        $modal.addEventListener('keydown', (event) => this.handleTrapFocus(event, firstFocusableElement, lastFocusableElement))
-      } else if (this.lastFocusedElement) {
-        this.lastFocusedElement.focus()
-        this.lastFocusedElement = null
+    this.lastFocusedElement = document.activeElement
+    $modal.focus()
+
+    const focusableElements = 'button, input, textarea, [tabindex]:not([tabindex="-1"])'
+    const focusableElementsInModal = Array.from($modal.querySelectorAll(focusableElements))
+    const firstFocusableElement = focusableElementsInModal[0]
+    const lastFocusableElement = focusableElementsInModal[focusableElementsInModal.length - 1]
+
+    this.handleKeydown = (event) => {
+      this.handleTrapFocus(event, firstFocusableElement, lastFocusableElement)
+    }
+    $modal.addEventListener('keydown', this.handleKeydown)
+
+    this.handleDocumentClick = (event) => {
+      const isClickInside = $modal?.contains(event.target)
+      if (!isClickInside) {
+        this.closeContactForm()
+        $form.reset()
+        this.clearErrors()
+        document.removeEventListener('click', this.handleDocumentClick)
       }
     }
+
+    document.addEventListener('click', this.handleDocumentClick)
+  },
+
+  closeContactForm () {
+    const { $mainContainer, $modal } = this.getModalElements()
+
+    this.toggleAttributes($mainContainer, $modal, false)
+
+    if (this.lastFocusedElement) {
+      this.lastFocusedElement.focus()
+      this.lastFocusedElement = null
+    }
+
+    $modal.removeEventListener('keydown', this.handleKeydown)
   },
 
   handleTrapFocus (event, firstFocusableElement, lastFocusableElement) {
@@ -272,7 +291,7 @@ const contactForm = {
   },
 
   validateContactForm () {
-    const $form = document.querySelector('.contact-form')
+    const { $form } = this.getModalElements()
     const getFieldValue = (id) => {
       const value = $form.querySelector(`#${id}`).value
       console.log(`Value of field ${id}: ${value}`)

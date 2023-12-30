@@ -40,7 +40,6 @@ class PhotographerTemplate {
     const $cardContent = document.createElement('div')
     $cardContent.classList.add('card-content')
 
-    // Create and append <p> elements for location, tagline, and price
     const $location = document.createElement('p')
     $location.classList.add('location')
     $location.textContent = this._photographer.location
@@ -56,12 +55,10 @@ class PhotographerTemplate {
     $price.textContent = this._photographer.price
     $price.setAttribute('aria-label', `Prix: ${this._photographer.price}`)
 
-    // Append location, tagline, and price to the card content
     $cardContent.appendChild($location)
     $cardContent.appendChild($tagline)
     $cardContent.appendChild($price)
 
-    // Append the $link and card content to the main container
     $container.appendChild($link)
     $container.appendChild($cardContent)
 
@@ -76,7 +73,6 @@ class PhotographerTemplate {
     const $photographerContainer = document.createElement('section')
     $photographerContainer.classList.add('photographer-container')
 
-    // Create elements for the photographer information
     const $photographerInfos = document.createElement('div')
     $photographerInfos.classList.add('photograph-infos')
 
@@ -92,18 +88,15 @@ class PhotographerTemplate {
     $photographerTagline.classList.add('photograph-tagline')
     $photographerTagline.textContent = this._photographer.tagline
 
-    // Append photographer information elements to the container
     $photographerInfos.appendChild($photographerName)
     $photographerInfos.appendChild($photographerLocation)
     $photographerInfos.appendChild($photographerTagline)
 
-    // Create elements for the contact button
     const $contactButton = document.createElement('button')
     $contactButton.classList.add('contact-button')
     $contactButton.textContent = 'Contactez-moi'
     $contactButton.setAttribute('aria-label', `Contactez ${this._photographer.name}`)
 
-    // Create elements for the photographer thumbnail
     const $photographerThumbnail = document.createElement('div')
     $photographerThumbnail.classList.add('photograph-thumbnail')
 
@@ -111,10 +104,8 @@ class PhotographerTemplate {
     $photographerImage.src = this._photographer.portrait
     $photographerImage.alt = `Portrait de ${this._photographer.name}`
 
-    // Append photographer thumbnail elements to the container
     $photographerThumbnail.appendChild($photographerImage)
 
-    // Append all elements to the main container
     $photographerContainer.appendChild($photographerInfos)
     $photographerContainer.appendChild($contactButton)
     $photographerContainer.appendChild($photographerThumbnail)
