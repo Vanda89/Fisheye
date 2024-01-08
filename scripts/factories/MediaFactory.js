@@ -8,6 +8,7 @@
  * @property {number} likes
  * @property {string} date
  * @property {number} price
+ * @property {boolean} isLiked
  */
 
 /**
@@ -125,8 +126,7 @@ class MediaFactory {
   createMedia (mediaData) {
     const media = new Media(mediaData)
     media.fullPath = `window.location.origin/assets/photographers/Sample_Photos/${media.photographerId}/${media.image}`
-    media.isLiked = mediaData.isLiked // Add this line
-    // console.log(media)
+    media.isLiked = mediaData.isLiked
     return media
   }
 }

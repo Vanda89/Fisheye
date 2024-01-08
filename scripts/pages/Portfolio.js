@@ -11,6 +11,7 @@ export class Portfolio {
   constructor () {
     this.photographerFactory = new PhotographerFactory()
     this.mediaFactory = new MediaFactory('')
+
     this.$slideshowDOM = slideshow.createSlideshow()
     this.slideshowCardList = []
     this.currentElement = this.clickedIndex
@@ -37,7 +38,6 @@ export class Portfolio {
       const photographersObject = await fetch('./data/photographers.json').then(
         (response) => response.json()
       )
-      // Map each photographer in the JSON data to a photographer object using the factory
       const photographersData = photographersObject.photographers.map(
         (photographer) =>
           this.photographerFactory.createPhotographer(photographer)
@@ -45,7 +45,7 @@ export class Portfolio {
       return photographersData
     } catch (error) {
       console.error('Error fetching photographers:', error)
-      return []
+      return { photographer: [] }
     }
   }
 
@@ -79,13 +79,7 @@ export class Portfolio {
     return medias.filter((media) => media.photographerId === mediaPhotographerId)
   }
 
-  findMediaById (sortedMedias, mediaCardId) {
-    const mediaIndex = sortedMedias.findIndex(
-      (media) => media._id === mediaCardId
-    )
-    return mediaIndex
-  }
-
+  // this.mediasData = await this.getMediasByPhotographerId(photographerId)
   sortMediasByOption (sortOption) {
     let sortedMediasData = []
 
@@ -101,11 +95,11 @@ export class Portfolio {
   }
 
   handleChoiceOption (sortOption) {
+    const $dropdown = document.querySelector('.dropdown')
     const $sortingDropdown = document.getElementById('sortingDropdown')
     const $popularityButton = document.getElementById('popularité')
     const $dateButton = document.getElementById('date')
     const $titleButton = document.getElementById('titre')
-    const $dropdown = document.querySelector('.dropdown')
 
     if ($sortingDropdown) { $sortingDropdown.textContent = sortOption }
 
@@ -194,6 +188,7 @@ export class Portfolio {
 
   async displayPortfolioData (sortOption = 'Popularité') {
     const dropdownData = dropdown.createDropdown()
+
     this.sortedMedias = this.sortMediasByOption(sortOption)
     this.slideshowCardList = this.sortedMedias
 
@@ -201,21 +196,14 @@ export class Portfolio {
 
     this.handleChoiceOption(sortOption)
 
-    const $sortingDropdown = document.querySelector('.sortingDropdown')
-
-    $sortingDropdown.addEventListener('click', () => {
-      dropdown.toggleDropdown(true)
-    })
-
-    $sortingDropdown.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        dropdown.toggleDropdown(true)
-      }
-    })
+    dropdown.initializeDropdown()
 
     const $slideshowDOM = document.querySelector('.slideshow-modal')
     if (!$slideshowDOM) {
       this.appendChildToParent(this.$mainContainer, this.$slideshowDOM)
+    }
+    if ($slideshowDOM?.classList.contains('open')) {
+      document.removeEventListener('keydown', this.handleKeyboardControls)
     }
 
     if (this.sortedMedias.length) {
@@ -226,37 +214,43 @@ export class Portfolio {
         this.appendChildToParent(this.$cardContainer, mediaCardDOM)
 
         const mediaThumbnail = mediaModel.createMediaThumbnail()
-
-        const mediaLikes = mediaModel.setMediaLikes()
-        const mediaCardId = mediaLikes.mediaCardId
+        const mediaCardId = mediaThumbnail.mediaId
         const $figureMediaCard = document.querySelector(
           '.card-content.' + mediaCardId
         )
         if ($figureMediaCard) {
+          this.handleMediaThumbnail(mediaThumbnail.type, mediaThumbnail.mediaId, mediaThumbnail.src)
+
+          const $likesNumber =
+          $figureMediaCard.querySelector('.card-likes-number')
           const $cardLikesIcon =
           $figureMediaCard.querySelector('.card-likes-icons')
-          const $likesElement =
-          $figureMediaCard.querySelector('.card-likes-number')
 
-          this.handleMedia(mediaThumbnail.type, mediaThumbnail.mediaId, mediaThumbnail.src)
+          this.handleLikes($likesNumber, $cardLikesIcon, this.sortedMedias, mediaCardId, 'click', (updatedSortedMedias, isLiked) => {
+            this.sortedMedias = updatedSortedMedias
+          })
 
-          this.handleLikes($cardLikesIcon, $likesElement, this.sortedMedias, mediaCardId, (updatedMediasDataClone, isLiked) => {
-            this.sortedMedias = updatedMediasDataClone
-          }, 'click')
-
-          this.handleLikes($cardLikesIcon, $likesElement, this.sortedMedias, mediaCardId, (updatedMediasDataClone, isLiked) => {
-            this.sortedMedias = updatedMediasDataClone
-          }, 'keydown')
+          this.handleLikes($likesNumber, $cardLikesIcon, this.sortedMedias, mediaCardId, 'keydown', (updatedSortedMedias, isLiked) => {
+            this.sortedMedias = updatedSortedMedias
+          })
         }
       })
     }
+
     const photographerModel = new PhotographerTemplate(this.photographer)
     const photographerInfoBar = photographerModel.createPhotographerInfoBar()
     this.appendChildToParent(this.$infoBarContainer, photographerInfoBar)
     this.setTotalLikes()
   }
 
-  handleMedia (type, mediaId, src) {
+  findMediaById (sortedMedias, mediaCardId) {
+    const mediaIndex = sortedMedias.findIndex(
+      (media) => media._id === mediaCardId
+    )
+    return mediaIndex
+  }
+
+  handleMediaThumbnail (type, mediaId, src) {
     const mediaSelector = `.${type}-media.${mediaId}`
     const $mediaList = document.querySelectorAll(mediaSelector)
 
@@ -275,11 +269,12 @@ export class Portfolio {
         this.currentElement = this.clickedIndex
 
         slideshow.openSlideshow()
-        dropdown.toggleDropdown(false)
-
+        const $slideshow = document.querySelector('.slideshow-modal')
+        if ($slideshow.classList.contains('open')) {
+          dropdown.toggleDropdown(false)
+          this.handleSlideshowPosition()
+        }
         this.setElementsSlideshow(mediaId)
-
-        this.handleSlideshowPosition()
       }
 
       mediaElement.addEventListener('click', handleClickMedia)
@@ -326,21 +321,19 @@ export class Portfolio {
   handleSlideshowPosition (
   ) {
     const $leftArrow = this.$slideshowDOM.querySelector('.left-control')
-    const $rightArrow = this.$slideshowDOM.querySelector('.right-control')
-    // this.listener = this.handleArrowClick.bind(this, direction)
     $leftArrow.removeEventListener('click', this.leftListener)
     $leftArrow.addEventListener('click', this.leftListener)
+
+    const $rightArrow = this.$slideshowDOM.querySelector('.right-control')
     $rightArrow.removeEventListener('click', this.rightListener)
     $rightArrow.addEventListener('click', this.rightListener)
 
-    // this.handleKeyboardControls = this.handleKeyboardControls.bind(this)
     document.removeEventListener('keydown', this.handleKeyboardControls)
     document.addEventListener('keydown', this.handleKeyboardControls)
 
     const closeButton = document.getElementById('close-control')
-    // this.handleCloseClick = this.handleCloseClick.bind(this)
-    closeButton.removeEventListener('click', this.handleCloseClick)
-    closeButton.addEventListener('click', this.handleCloseClick)
+    closeButton.removeEventListener('click', this.handleCloseEvent)
+    closeButton.addEventListener('click', this.handleCloseEvent)
     closeButton.removeEventListener('keydown', this.handleCloseKeydown)
     closeButton.addEventListener('keydown', this.handleCloseKeydown)
   }
@@ -348,30 +341,19 @@ export class Portfolio {
   handleArrowClick (
     direction
   ) {
-    try {
-      if (this.slideshowCardList?.length) {
-        this.currentElement = (this.currentElement + direction + this.slideshowCardList.length) % this.slideshowCardList.length
-        this.setElementsSlideshow(
-          this.slideshowCardList[this.currentElement]._id
-        )
-      }
-    } catch (error) {
-      console.error(
-        'Une erreur est survenue lors de la gestion du clic sur la flèche :',
-        error
+    if (this.slideshowCardList?.length) {
+      this.currentElement = (this.currentElement + direction + this.slideshowCardList.length) % this.slideshowCardList.length
+      this.setElementsSlideshow(
+        this.slideshowCardList[this.currentElement]._id
       )
     }
   }
 
-  handleCloseClick = (event) => {
-    event.stopPropagation()
-    slideshow.closeSlideshow()
-  }
-
-  handleCloseKeydown = (event) => {
-    if (event.key === 'Enter' || event.key === 'Escape') {
+  handleCloseEvent = (event) => {
+    if (event.type === 'click' || (event.type === 'keydown' && (event.key === 'Enter' || event.key === 'Escape'))) {
       event.stopPropagation()
       slideshow.closeSlideshow()
+      document.removeEventListener(event.type, this.handleKeyboardControls)
     }
   }
 
@@ -405,18 +387,18 @@ export class Portfolio {
   }
 
   /**
-   * Handle the click event on media likes icon, toggle the 'liked' class, and update the likes count.
-   * @param {Element} $cardLikesIcon - The likes icon element.
-   * @param {Element} $likesElement - The element displaying the likes count.
-   * @returns {boolean} - The updated like status (true if liked, false otherwise).
+   * This function receives two arguments:
+   * `updatedSortedMedias`, an array of the updated media objects;
+   * `isLiked`, a boolean indicating when the media item is liked.
+   * @returns {Object} - An object containing the updated list of media objects with the new likes count and status.
    */
   handleLikes (
+    $likesNumber,
     $cardLikesIcon,
-    $likesElement,
     sortedMedias,
     mediaCardId,
-    callback,
-    eventType
+    eventType,
+    callback
   ) {
     $cardLikesIcon.addEventListener(eventType, (event) => {
       if (eventType === 'keydown' && event.key !== 'Enter') {
@@ -424,28 +406,27 @@ export class Portfolio {
       }
 
       let isLiked = $cardLikesIcon.classList.contains('liked')
-      try {
-        isLiked = !isLiked
-        $cardLikesIcon.classList.toggle('liked', isLiked)
+      isLiked = !isLiked
+      $cardLikesIcon.classList.toggle('liked', isLiked)
 
-        let currentLikes = parseInt(this.getTextContent($likesElement))
-        currentLikes = isLiked ? currentLikes + 1 : currentLikes - 1
-        this.setTextContent($likesElement, currentLikes.toString())
+      $cardLikesIcon.setAttribute('aria-pressed', isLiked ? 'true' : 'false')
 
-        this.setTotalLikes()
+      let currentLikes = parseInt(this.getTextContent($likesNumber))
+      currentLikes = isLiked ? currentLikes + 1 : currentLikes - 1
+      this.setTextContent($likesNumber, currentLikes.toString())
 
-        const mediaIndex = this.findMediaById(
-          sortedMedias,
-          parseInt(mediaCardId.split('-')[1])
-        )
+      this.setTotalLikes()
 
-        if (mediaIndex !== -1) {
-          sortedMedias[mediaIndex]._isLiked = isLiked
-          sortedMedias[mediaIndex]._likes = currentLikes
-        }
-      } catch (error) {
-        console.error('An error occurred:', error)
+      const mediaIndex = this.findMediaById(
+        sortedMedias,
+        parseInt(mediaCardId.split('-')[1])
+      )
+
+      if (mediaIndex !== -1) {
+        sortedMedias[mediaIndex]._isLiked = isLiked
+        sortedMedias[mediaIndex]._likes = currentLikes
       }
+
       callback(sortedMedias, isLiked)
     })
   }
@@ -469,11 +450,6 @@ export class Portfolio {
     return totalLikes
   }
 
-  /**
-   * Handle the sorting dropdown selection by updating th e displayed portfolio data,
-   * changing the sorting dropdown label, and refreshing the displayed media.
-   * @param {string} sortOption - The selected sorting option ('popularity', 'date', or 'title').
-   */
   async handleSortDropdown (sortOption) {
     this.removeAllChildrenFromParent(this.$cardContainer)
     this.removeAllChildrenFromParent(this.$infoBarContainer)
@@ -487,8 +463,6 @@ export class Portfolio {
 
     if ($sortingDropdown) {
       this.setTextContent($sortingDropdown, sortOption)
-    } else {
-      console.error('Unable to find element with class sortingDropdown')
     }
 
     dropdown.reorderButtonsBySort(sortOption)
@@ -496,10 +470,8 @@ export class Portfolio {
     if ($dropdown) {
       if ($sortMenu) {
         $sortMenu.setAttribute('aria-activedescendant', sortOption.toLowerCase())
+        $sortingDropdown.focus()
       }
-      dropdown.toggleDropdown(false)
-    } else {
-      console.error('Unable to find element with class dropdown')
     }
   }
 
@@ -508,5 +480,7 @@ export class Portfolio {
     this.mediasData = await this.getMediasByPhotographerId(photographerId)
     await this.displayHeaderData()
     await this.displayPortfolioData()
+
+    document.title = 'Fisheye - Portfolio de ' + this.photographer._name
   }
 }

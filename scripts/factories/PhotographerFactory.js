@@ -1,11 +1,18 @@
 /**
+ * @typedef {Object} PhotographerData
+ * @property {number} id
+ * @property {string} name
+ * @property {string} city
+ * @property {string} country
+ * @property {string} tagline
+ * @property {number} price
+ * @property {string} portrait
+ */
+
+/**
  * Class representing a Photographer.
  */
 class Photographer {
-  /**
-   * Constructor for the Photographer class.
-   * @param {Object} photographers - Photographer data.
-   */
   constructor (photographers) {
     this._name = photographers.name
     this._id = photographers.id

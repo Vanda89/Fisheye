@@ -163,6 +163,7 @@ const contactForm = {
     $closeButton.addEventListener('click', handleCloseButton)
     $closeButton.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === 'Escape') {
+        event.preventDefault()
         handleCloseButton(event)
       }
     })
@@ -203,9 +204,12 @@ const contactForm = {
 
     this.toggleAttributes($mainContainer, $modal, true)
 
+    // Store the currently focused element to return focus to it when the modal is closed,
+    // and focus the modal itself
     this.lastFocusedElement = document.activeElement
     $modal.focus()
 
+    // Trap focus inside the modal while it's open for accessibility
     const focusableElements = 'button, input, textarea, [tabindex]:not([tabindex="-1"])'
     const focusableElementsInModal = Array.from($modal.querySelectorAll(focusableElements))
     const firstFocusableElement = focusableElementsInModal[0]
@@ -216,30 +220,19 @@ const contactForm = {
     }
     $modal.addEventListener('keydown', this.handleKeydown)
 
-    this.handleDocumentClick = (event) => {
-      const isClickInside = $modal?.contains(event.target)
-      if (!isClickInside) {
-        this.closeContactForm()
-        $form.reset()
-        this.clearErrors()
-        document.removeEventListener('click', this.handleDocumentClick)
+    if (!this.handleDocumentClick) {
+      this.handleDocumentClick = (event) => {
+        const isClickInside = $modal?.contains(event.target)
+        if (!isClickInside) {
+          this.closeContactForm()
+          $form.reset()
+          this.clearErrors()
+          document.removeEventListener('click', this.handleDocumentClick)
+        }
       }
+
+      document.addEventListener('click', this.handleDocumentClick)
     }
-
-    document.addEventListener('click', this.handleDocumentClick)
-  },
-
-  closeContactForm () {
-    const { $mainContainer, $modal } = this.getModalElements()
-
-    this.toggleAttributes($mainContainer, $modal, false)
-
-    if (this.lastFocusedElement) {
-      this.lastFocusedElement.focus()
-      this.lastFocusedElement = null
-    }
-
-    $modal.removeEventListener('keydown', this.handleKeydown)
   },
 
   handleTrapFocus (event, firstFocusableElement, lastFocusableElement) {
@@ -259,6 +252,23 @@ const contactForm = {
         firstFocusableElement.focus()
         event.preventDefault()
       }
+    }
+  },
+
+  closeContactForm () {
+    const { $mainContainer, $modal } = this.getModalElements()
+
+    this.toggleAttributes($mainContainer, $modal, false)
+
+    if (this.lastFocusedElement) {
+      this.lastFocusedElement.focus()
+      this.lastFocusedElement = null
+    }
+
+    $modal.removeEventListener('keydown', this.handleKeydown)
+    if (this.handleDocumentClick) {
+      document.removeEventListener('click', this.handleDocumentClick)
+      this.handleDocumentClick = null
     }
   },
 

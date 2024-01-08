@@ -1,13 +1,13 @@
-// Importing modules App.js
 import PhotographerFactory from '../factories/PhotographerFactory.js'
 import PhotographerTemplate from '../templates/PhotographerTemplate.js'
 
+// App.js : Display the list of photographers on the homepage of the website
+// and handle the redirection to the portfolio page when clicking on a photographer card
 export class App {
   constructor () {
     this.$photographersContainer = document.querySelector(
       '.photographers-section'
     )
-
     this.photographerFactory = new PhotographerFactory()
   }
 
@@ -37,8 +37,8 @@ export class App {
     const photographersData = await this.getPhotographers()
 
     const photographerInstances = photographersData.photographers.map(
-      (photographerData) =>
-        this.photographerFactory.createPhotographer(photographerData)
+      (photographer) =>
+        this.photographerFactory.createPhotographer(photographer)
     )
 
     photographerInstances.forEach((photographer) => {
@@ -49,10 +49,19 @@ export class App {
       const portfolioLink = photographerCardDOM.querySelector('.portfolio-link')
 
       portfolioLink.dataset.photographerId = photographer.id
-      portfolioLink?.addEventListener('click', (event) => {
-        event.preventDefault() // Empêche le comportement par défaut du lien
 
-        window.location.href = `../../photographer.html?id=${photographer.id}`// Redirige vers la page du photographe
+      portfolioLink?.addEventListener('click', (event) => {
+        event.stopPropagation()
+        event.preventDefault()
+        window.location.href = `../../photographer.html?id=${photographer.id}`
+      })
+
+      portfolioLink?.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.stopPropagation()
+          event.preventDefault()
+          window.location.href = `../../photographer.html?id=${photographer.id}`
+        }
       })
 
       this.$photographersContainer.appendChild(photographerCardDOM)
