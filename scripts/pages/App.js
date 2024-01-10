@@ -13,10 +13,9 @@ export class App {
 
   async getPhotographers () {
     try {
-      const photographersObject = await fetch('data/photographers.json').then(
+      const photographersObject = await fetch('./data/photographers.json').then(
         (photographers) => photographers.json()
       )
-      console.log(photographersObject)
       if (
         photographersObject &&
         Array.isArray(photographersObject.photographers)
@@ -36,7 +35,6 @@ export class App {
 
   async displayData () {
     const photographersData = await this.getPhotographers()
-    console.log(photographersData)
 
     const photographerInstances = photographersData.photographers.map(
       (photographer) =>
@@ -55,14 +53,14 @@ export class App {
       portfolioLink?.addEventListener('click', (event) => {
         event.stopPropagation()
         event.preventDefault()
-        window.location.href = `../../Fisheye/photographer.html?id=${photographer.id}`
+        window.location.href = `../../photographer.html?id=${photographer.id}`
       })
 
       portfolioLink?.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
           event.stopPropagation()
           event.preventDefault()
-          window.location.href = `../../Fisheye/photographer.html?id=${photographer.id}`
+          window.location.href = `../../photographer.html?id=${photographer.id}`
         }
       })
 
