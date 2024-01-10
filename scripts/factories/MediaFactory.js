@@ -130,5 +130,3 @@ class MediaFactory {
     return media
   }
 }
-
-export default MediaFactory

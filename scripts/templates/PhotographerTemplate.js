@@ -160,5 +160,3 @@ class PhotographerTemplate {
     return $infoBar
   }
 }
-
-export default PhotographerTemplate

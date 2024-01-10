@@ -111,5 +111,3 @@ class MediaTemplate {
     return mediaThumbnailInfo
   }
 }
-
-export default MediaTemplate

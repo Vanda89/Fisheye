@@ -168,5 +168,3 @@ const slideshow = {
     }
   }
 }
-
-export default slideshow

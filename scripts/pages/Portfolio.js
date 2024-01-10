@@ -1,13 +1,6 @@
 // Importing modules Portfolio.js
-import PhotographerFactory from '../factories/PhotographerFactory.js'
-import PhotographerTemplate from '../templates/PhotographerTemplate.js'
-import MediaFactory from '../factories/MediaFactory.js'
-import MediaTemplate from '../templates/MediaTemplate.js'
-import contactForm from '../utils/contactForm.js'
-import dropdown from '../utils/dropdown.js'
-import slideshow from '../utils/slideshow.js'
 
-export class Portfolio {
+class Portfolio {
   constructor () {
     this.photographerFactory = new PhotographerFactory()
     this.mediaFactory = new MediaFactory('')
@@ -484,3 +477,12 @@ export class Portfolio {
     document.title = 'Fisheye - Portfolio de ' + this.photographer._name
   }
 }
+const getIdFromUrl = () => {
+  const urlParams = new URLSearchParams(window.location.search)
+  const id = urlParams.get('id')
+
+  return parseInt(id) || null
+}
+
+const portfolio = new Portfolio()
+portfolio.init(getIdFromUrl())

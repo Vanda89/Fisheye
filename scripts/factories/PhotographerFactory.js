@@ -89,5 +89,3 @@ class PhotographerFactory {
     return new Photographer(photographerData)
   }
 }
-
-export default PhotographerFactory
