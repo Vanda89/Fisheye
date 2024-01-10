@@ -125,7 +125,7 @@ class MediaFactory {
    */
   createMedia (mediaData) {
     const media = new Media(mediaData)
-    media.fullPath = `window.location.origin/assets/photographers/Sample_Photos/${media.photographerId}/${media.image}`
+    media.fullPath = `window.location.origin/Fisheye/assets/photographers/Sample_Photos/${media.photographerId}/${media.image}`
     media.isLiked = mediaData.isLiked
     return media
   }

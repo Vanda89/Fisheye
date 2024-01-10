@@ -70,7 +70,7 @@ class Photographer {
   get portrait () {
     return (
       window.location.origin +
-      '/assets/photographers/Sample_Photos/Photographers_ID_Photos/' +
+      '/Fisheye/assets/photographers/Sample_Photos/Photographers_ID_Photos/' +
       `${this._portrait}`
     )
   }

@@ -152,7 +152,7 @@ export class Portfolio {
 
     const mediaFullPath =
     window.location.origin +
-    '/assets/photographers/Sample_Photos/' +
+    '/Fisheye/assets/photographers/Sample_Photos/' +
     photographerFirstName +
     '/' +
     src
@@ -181,7 +181,7 @@ export class Portfolio {
     if ($form) {
       $form.setAttribute(
         'action',
-        window.location.origin + '/photographer.html?id=' + this.photographer._id
+        window.location.origin + '/Fisheye/photographer.html?id=' + this.photographer._id
       )
     }
   }
