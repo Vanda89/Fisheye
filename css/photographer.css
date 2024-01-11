@@ -141,7 +141,8 @@ main {
     position: relative;
 }
 
-.dropdown.open #sortingDropdown {
+.dropdown.open #sortingDropdown,
+.dropdown.open .chevron-down {
     display: none;
     cursor: pointer;
 }
@@ -200,12 +201,16 @@ main {
     right: 20px;
     width: 24px;
     height: 24px;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
 }
 
 #listbox {
     display: none;
     flex-direction: column;
-    border-radius: 5px ;
+    border-radius: 5px;
     overflow: hidden;
     position: relative;
     padding: 0;
@@ -231,17 +236,6 @@ main {
 
 .sort-entry:last-child {
     border-bottom: none;
-}
-
-
-
-
-.chevron-up {
-    position: absolute;
-    top: 24px;
-    right: 20px;
-    width: 24px;
-    height: 24px;
 }
 
 
@@ -457,7 +451,7 @@ main {
     border-radius: 5px;
 }
 
-.contact-modal form div span  {
+.contact-modal form div span {
     content: attr(data-error);
     font-size: 0.8em;
     color: var(--primary-color);
@@ -481,7 +475,7 @@ main {
     margin-top: 8px;
     cursor: pointer;
 }
-   
+
 
 
 
@@ -526,7 +520,7 @@ main {
     width: 1050px;
     margin: 62px 0;
     align-self: center;
-    
+
 }
 
 .slideshow-modal figcaption {
