@@ -1,5 +1,3 @@
-// Importing modules Portfolio.js
-
 class Portfolio {
   constructor () {
     this.photographerFactory = new PhotographerFactory()
@@ -145,7 +143,7 @@ class Portfolio {
 
     const mediaFullPath =
     window.location.origin +
-    '/Fisheye/assets/photographers/Sample_Photos/' +
+    '/assets/photographers/Sample_Photos/' +
     photographerFirstName +
     '/' +
     src
@@ -174,7 +172,7 @@ class Portfolio {
     if ($form) {
       $form.setAttribute(
         'action',
-        window.location.origin + '/Fisheye/photographer.html?id=' + this.photographer._id
+        window.location.origin + '/photographer.html?id=' + this.photographer._id
       )
     }
   }

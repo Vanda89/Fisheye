@@ -1,5 +1,3 @@
-// App.js : Display the list of photographers on the homepage of the website
-// and handle the redirection to the portfolio page when clicking on a photographer card
 class App {
   constructor () {
     this.$photographersContainer = document.querySelector(
@@ -50,14 +48,14 @@ class App {
       portfolioLink?.addEventListener('click', (event) => {
         event.stopPropagation()
         event.preventDefault()
-        window.location.href = `../../Fisheye/photographer.html?id=${photographer.id}`
+        window.location.href = `../../photographer.html?id=${photographer.id}`
       })
 
       portfolioLink?.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
           event.stopPropagation()
           event.preventDefault()
-          window.location.href = `../../Fisheye/photographer.html?id=${photographer.id}`
+          window.location.href = `../../photographer.html?id=${photographer.id}`
         }
       })
 
