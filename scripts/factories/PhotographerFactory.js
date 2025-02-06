@@ -68,7 +68,7 @@ class Photographer {
    * @type {string}
    */
   get portrait () {
-    return '/assets/photographers/Sample_Photos/Photographers_ID_Photos/' + `${this._portrait}`
+    return 'assets/photographers/Sample_Photos/Photographers_ID_Photos/' + `${this._portrait}`
   }
 }
 
